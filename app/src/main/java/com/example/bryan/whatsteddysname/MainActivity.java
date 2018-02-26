@@ -30,18 +30,22 @@ public class MainActivity extends AppCompatActivity {
         signUpBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openActivity("Sign-up");
+                openActivity("Signup");
             }
         });
     }
 
     public void openActivity(String activityName) {
-        if(activityName == "Login") {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-        } else if (activityName == "Sign-up") {
-            Intent intent = new Intent(this, SignupActivity.class);
-            startActivity(intent);
+        Intent intent;
+        switch (activityName) {
+            case "Login":
+                intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                break;
+            case "Signup":
+                intent = new Intent(this, SignupActivity.class);
+                startActivity(intent);
+                break;
         }
     }
 }
