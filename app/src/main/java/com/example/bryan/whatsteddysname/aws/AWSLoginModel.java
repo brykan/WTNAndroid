@@ -1,7 +1,7 @@
 package com.example.bryan.whatsteddysname.aws;
 
 import android.content.Context;
-
+import android.content.SharedPreferences;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
@@ -19,9 +19,9 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GenericHa
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GetDetailsHandler;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.SignUpHandler;
 import com.amazonaws.regions.Regions;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.util.UUID;
 
 /**
  * This represents a model for login operations on AWS Mobile Hub. It manages login operations
@@ -33,6 +33,10 @@ import org.json.JSONObject;
 
 public class AWSLoginModel {
     // constants
+    private static final String USER_PROFILE = "UserValues";
+    private static final String USER_ID = "UserID";
+    private static final String USER_EMAIL = "UserEmail";
+    private static final String USER_NAME = "Username";
     public static final int PROCESS_SIGN_IN = 1;
     public static final int PROCESS_REGISTER = 2;
     public static final int PROCESS_CONFIRM_REGISTRATION = 3;
@@ -53,7 +57,6 @@ public class AWSLoginModel {
             mCognitoUser.getDetailsInBackground(new GetDetailsHandler() {
                 @Override
                 public void onSuccess(CognitoUserDetails cognitoUserDetails) {
-
                 }
 
                 @Override
@@ -99,7 +102,7 @@ public class AWSLoginModel {
     public AWSLoginModel(Context context, AWSLoginHandler callback) {
         mContext = context;
         IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
-        try{
+        try {
             JSONObject myJSON = identityManager.getConfiguration().optJsonObject("CognitoUserPool");
             final String COGNITO_POOL_ID = myJSON.getString("PoolId");
             final String COGNITO_CLIENT_ID = myJSON.getString("AppClientId");
@@ -140,6 +143,7 @@ public class AWSLoginModel {
             }
         };
 
+        setUser(userName, userEmail);
         mCognitoUserPool.signUpInBackground(userName, userPassword, userAttributes, null, signUpHandler);
     }
 
@@ -180,5 +184,48 @@ public class AWSLoginModel {
 
         mCognitoUser = mCognitoUserPool.getUser(userName);
         mCognitoUser.getSessionInBackground(authenticationHandler);
+    }
+
+    public void setUser(String userName, String userEmail) {
+        SharedPreferences.Editor editor = mContext.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE).edit();
+        String user_id = UUID.randomUUID().toString();
+
+        editor.putString(USER_ID, user_id);
+        editor.putString(USER_EMAIL, userEmail);
+        editor.putString(USER_NAME, userName);
+        editor.apply();
+    }
+
+    /**
+     * Gets the user name saved in user profile.
+     *
+     * @param context               REQUIRED: Android application context.
+     * @return                      user name saved in SharedPreferences.
+     */
+    public static String getUserName(Context context) {
+        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        return savedValues.getString(USER_NAME, "");
+    }
+
+    /**
+     * Gets the user e-mail saved in user profile.
+     *
+     * @param context               REQUIRED: Android application context.
+     * @return                      user e-mail saved in SharedPreferences.
+     */
+    public static String getUserEmail(Context context) {
+        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        return savedValues.getString(USER_EMAIL, "");
+    }
+
+    /**
+     * Gets the user id saved in user profile.
+     *
+     * @param context               REQUIRED: Android application context.
+     * @return                      user e-mail saved in SharedPreferences.
+     */
+    public static String getUserId(Context context) {
+        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        return savedValues.getString(USER_ID, "");
     }
 }

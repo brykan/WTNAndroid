@@ -1,6 +1,5 @@
 package com.example.bryan.whatsteddysname;
 
-import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
