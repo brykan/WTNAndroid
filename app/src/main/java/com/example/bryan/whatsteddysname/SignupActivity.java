@@ -54,6 +54,11 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
         // instantiating AWSLoginModel(context, callback)
         awsLoginModel = new AWSLoginModel(this, this);
 
+        userNameEntered = (TextInputEditText) findViewById(R.id.input_username);
+        passwordEntered = (TextInputEditText) findViewById(R.id.input_password);
+        emailEntered = (TextInputEditText) findViewById(R.id.input_email);
+        confirmPasswordEntered = (TextInputEditText) findViewById(R.id.input_confirm_password);
+
         signUpBtn = (Button) findViewById(R.id.btn_signup);
         signUpBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,7 +107,8 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
     public void onRegisterConfirmed() {
         confirmPrompt.cancel();
         Toast.makeText(getBaseContext(), "Confirmation Success", Toast.LENGTH_LONG).show();
-
+        SignupActivity.this.startActivity(new Intent(SignupActivity.this, LoginActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
     }
 
     @Override
@@ -150,13 +156,8 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
     }
 
     public void createAccount() {
-        userNameEntered = (TextInputEditText) findViewById(R.id.input_username);
         String username = userNameEntered.getText().toString();
-
-        passwordEntered = (TextInputEditText) findViewById(R.id.input_password);
         String password = passwordEntered.getText().toString();
-
-        emailEntered = (TextInputEditText) findViewById(R.id.input_email);
         String email = emailEntered.getText().toString();
 
         awsLoginModel.registerUser(username, email, password);
@@ -164,17 +165,9 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
 
     public boolean validate() {
         boolean valid = true;
-
-        userNameEntered = (TextInputEditText) findViewById(R.id.input_username);
         String username = userNameEntered.getText().toString();
-
-        passwordEntered = (TextInputEditText) findViewById(R.id.input_password);
         String password = passwordEntered.getText().toString();
-
-        confirmPasswordEntered = (TextInputEditText) findViewById(R.id.input_confirm_password);
         String passwordConfirm = confirmPasswordEntered.getText().toString();
-
-        emailEntered = (TextInputEditText) findViewById(R.id.input_email);
         String email = emailEntered.getText().toString();
 
         if (username.isEmpty() || username.length() <= 3 || !(username.matches("[a-zA-Z].*"))) {

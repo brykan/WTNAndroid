@@ -32,5 +32,5 @@ dependencies {
     compile('com.amazonaws:aws-android-sdk-mobile-client:2.6.7@aar') { transitive = true; }
     // Cognito UserPools for SignIn
     compile 'com.android.support:support-v4:26.+'
-    compile ('com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar') { transitive = true; }
+    compile('com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar') { transitive = true; }
 }
