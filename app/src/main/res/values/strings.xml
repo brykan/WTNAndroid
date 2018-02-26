@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">What\'s Teddy\'s Name</string>
+    <string name="title_1">What\'s</string>
+    <string name="title_2">Teddy\'s</string>
+    <string name="title_3">Name?</string>
+    <string name="log_in_description">Click here to log in.</string>
+    <string name="log_in_text">Log In</string>
+    <string name="sign_up_text">Sign Up</string>
+    <string name="sign_up_description">Click here to sign up.</string>
 </resources>
