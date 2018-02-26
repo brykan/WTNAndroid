@@ -14,4 +14,5 @@
     <string name="input_confirm_password_hint">Confirm Password</string>
     <string name="create_account_text">Create Account</string>
     <string name="already_a_member_text">Already a member? Login</string>
+    <string name="confirm_code_text">Enter confirmation code:</string>
 </resources>

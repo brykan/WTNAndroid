@@ -1,22 +1,28 @@
 package com.example.bryan.whatsteddysname;
 
+import android.app.Dialog;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
+import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity implements AWSLoginHandler {
     private DynamoDBMapper dynamoDBMapper;
     private TextView linkToLogin;
     private Button signUpBtn;
@@ -24,14 +30,16 @@ public class SignupActivity extends AppCompatActivity {
     private TextInputEditText emailEntered;
     private TextInputEditText passwordEntered;
     private TextInputEditText confirmPasswordEntered;
+    private EditText confirmCodeInput;
+    private ProgressDialog progressDialog;
+    private AWSLoginModel awsLoginModel;
+    private AlertDialog confirmPrompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        AWSConfiguration obj = AWSMobileClient.getInstance().getConfiguration();
-        Log.d("SIGNUPACTIVITY", obj.optJsonObject("CognitoUserPool").toString());
         // Instantiate a AmazonDynamoDBMapperClient
         try {
             AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
@@ -42,6 +50,9 @@ public class SignupActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.d(e.getClass().getName(), e.getMessage(), e);
         }
+
+        // instantiating AWSLoginModel(context, callback)
+        awsLoginModel = new AWSLoginModel(this, this);
 
         signUpBtn = (Button) findViewById(R.id.btn_signup);
         signUpBtn.setOnClickListener(new View.OnClickListener() {
@@ -58,6 +69,63 @@ public class SignupActivity extends AppCompatActivity {
                 goToLogin();
             }
         });
+
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptsView = li.inflate(R.layout.confirm_prompt, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+        alertDialogBuilder.setView(promptsView);
+
+        confirmCodeInput = (EditText) promptsView.findViewById(R.id.confirm_edittext);
+
+        // set dialog message
+        alertDialogBuilder.setCancelable(false)
+                .setPositiveButton("Enter",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // do confirmation and handles on interface
+                                awsLoginModel.confirmRegistration(confirmCodeInput.getText().toString());
+                            }
+                        });
+        // create alert dialog
+        confirmPrompt = alertDialogBuilder.create();
+    }
+
+    @Override
+    public void onRegisterSuccess() {
+        progressDialog.cancel();
+        Toast.makeText(getBaseContext(), "Confirmation code sent to email", Toast.LENGTH_LONG).show();
+        confirmPrompt.show();
+    }
+
+    @Override
+    public void onRegisterConfirmed() {
+        confirmPrompt.cancel();
+        Toast.makeText(getBaseContext(), "Confirmation Success", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onSignInSuccess() {
+        // To be implemented in LoginActivity
+    }
+
+    @Override
+    public void onFailure(int process, Exception exception) {
+        exception.printStackTrace();
+        String whatProcess = "";
+        switch (process) {
+            case AWSLoginModel.PROCESS_SIGN_IN:
+                whatProcess = "Sign In:";
+                break;
+            case AWSLoginModel.PROCESS_REGISTER:
+                whatProcess = "Registration:";
+                break;
+            case AWSLoginModel.PROCESS_CONFIRM_REGISTRATION:
+                whatProcess = "Registration Confirmation:";
+                break;
+        }
+        Toast.makeText(getBaseContext(), whatProcess + exception.getMessage(), Toast.LENGTH_LONG).show();
     }
 
     public void goToLogin() {
@@ -71,14 +139,27 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this,
+        progressDialog = new ProgressDialog(SignupActivity.this,
                 R.style.Theme_AppCompat_DayNight_Dialog);
         progressDialog.setIndeterminate(true);
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Creating Account...");
         progressDialog.show();
 
+        createAccount();
+    }
 
+    public void createAccount() {
+        userNameEntered = (TextInputEditText) findViewById(R.id.input_username);
+        String username = userNameEntered.getText().toString();
+
+        passwordEntered = (TextInputEditText) findViewById(R.id.input_password);
+        String password = passwordEntered.getText().toString();
+
+        emailEntered = (TextInputEditText) findViewById(R.id.input_email);
+        String email = emailEntered.getText().toString();
+
+        awsLoginModel.registerUser(username, email, password);
     }
 
     public boolean validate() {
