@@ -2,7 +2,11 @@ package com.example.bryan.whatsteddysname.aws;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserAttributes;
@@ -18,9 +22,15 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.Authentic
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GenericHandler;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GetDetailsHandler;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.SignUpHandler;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.example.bryan.whatsteddysname.WTNUsersDO;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -28,12 +38,16 @@ import java.util.UUID;
  * such as:
  * - Sign In
  * - Sign Up
+ * - Confirm Sign Up
  *
  */
 
 public class AWSLoginModel {
+    private DynamoDBMapper dynamoDBMapper;
+
     // constants
-    private static final String USER_PROFILE = "UserValues";
+    private final String ATTR_EMAIL = "email";
+    private static final String SHARED_PREFERENCE = "SharedValues";
     private static final String USER_ID = "UserID";
     private static final String USER_EMAIL = "UserEmail";
     private static final String USER_NAME = "Username";
@@ -57,6 +71,11 @@ public class AWSLoginModel {
             mCognitoUser.getDetailsInBackground(new GetDetailsHandler() {
                 @Override
                 public void onSuccess(CognitoUserDetails cognitoUserDetails) {
+                    // Save e-mail in SharedPreferences
+                    SharedPreferences.Editor editor = mContext.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE).edit();
+                    String email = cognitoUserDetails.getAttributes().getAttributes().get(ATTR_EMAIL);
+                    editor.putString(USER_EMAIL, email);
+                    editor.apply();
                 }
 
                 @Override
@@ -65,6 +84,10 @@ public class AWSLoginModel {
                 }
             });
 
+            // Save userName in SharedPreferences
+            SharedPreferences.Editor editor = mContext.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE).edit();
+            editor.putString(USER_NAME, userName);
+            editor.apply();
             mCallback.onSignInSuccess();
         }
 
@@ -113,6 +136,24 @@ public class AWSLoginModel {
             e.printStackTrace();
         }
 
+        // Initialize the Amazon Cognito credentials provider
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                mContext,
+                "us-east-1:0aba8b06-2682-4d64-8131-86352213cb4a", // Identity pool ID
+                Regions.US_EAST_1 // Region
+        );
+
+        // Instantiate a AmazonDynamoDBMapperClient
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+        } catch (Exception e) {
+            Log.d(e.getClass().getName(), e.getMessage(), e);
+        }
+
         mCallback = callback;
     }
 
@@ -128,7 +169,7 @@ public class AWSLoginModel {
      */
     public void registerUser(String userName, String userEmail, String userPassword) {
         CognitoUserAttributes userAttributes = new CognitoUserAttributes();
-        userAttributes.addAttribute("email", userEmail);
+        userAttributes.addAttribute(ATTR_EMAIL, userEmail);
 
         final SignUpHandler signUpHandler = new SignUpHandler() {
             @Override
@@ -143,7 +184,7 @@ public class AWSLoginModel {
             }
         };
 
-        setUser(userName, userEmail);
+        createUser(userName, userEmail, userPassword);
         mCognitoUserPool.signUpInBackground(userName, userPassword, userAttributes, null, signUpHandler);
     }
 
@@ -186,9 +227,25 @@ public class AWSLoginModel {
         mCognitoUser.getSessionInBackground(authenticationHandler);
     }
 
-    public void setUser(String userName, String userEmail) {
-        SharedPreferences.Editor editor = mContext.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE).edit();
+    public void createUser(String userName, String userEmail, String userPassword) {
+        final WTNUsersDO userItem = new WTNUsersDO();
+        SharedPreferences.Editor editor =
+                mContext.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE).edit();
         String user_id = UUID.randomUUID().toString();
+
+        userItem.setUserId(user_id);
+        userItem.setEmail(userEmail);
+        userItem.setUsername(userName);
+        userItem.setPassword(userPassword.getBytes());
+        userItem.setItems(new ArrayList<String>());
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dynamoDBMapper.save(userItem);
+                // Item saved
+            }
+        }).start();
 
         editor.putString(USER_ID, user_id);
         editor.putString(USER_EMAIL, userEmail);
@@ -203,7 +260,7 @@ public class AWSLoginModel {
      * @return                      user name saved in SharedPreferences.
      */
     public static String getUserName(Context context) {
-        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        SharedPreferences savedValues = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
         return savedValues.getString(USER_NAME, "");
     }
 
@@ -214,7 +271,7 @@ public class AWSLoginModel {
      * @return                      user e-mail saved in SharedPreferences.
      */
     public static String getUserEmail(Context context) {
-        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        SharedPreferences savedValues = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
         return savedValues.getString(USER_EMAIL, "");
     }
 
@@ -225,7 +282,7 @@ public class AWSLoginModel {
      * @return                      user e-mail saved in SharedPreferences.
      */
     public static String getUserId(Context context) {
-        SharedPreferences savedValues = context.getSharedPreferences(USER_PROFILE, Context.MODE_PRIVATE);
+        SharedPreferences savedValues = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
         return savedValues.getString(USER_ID, "");
     }
 }

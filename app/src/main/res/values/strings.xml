@@ -17,4 +17,6 @@
     <string name="confirm_code_text">Enter confirmation code:</string>
     <string name="forgot_password_text">Forgot password?</string>
     <string name="collection_title">My Collection</string>
+    <string name="splash_loading_text">Loading...</string>
+    <string name="splash_title">What\'s Teddy\'s Name?</string>
 </resources>

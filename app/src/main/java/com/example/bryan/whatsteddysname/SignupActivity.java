@@ -15,14 +15,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+//import com.amazonaws.mobile.client.AWSMobileClient;
+//import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+//import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 public class SignupActivity extends AppCompatActivity implements AWSLoginHandler {
-    private DynamoDBMapper dynamoDBMapper;
     private TextView linkToLogin;
     private Button signUpBtn;
     private TextInputEditText userNameEntered;
@@ -38,17 +37,6 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-
-        // Instantiate a AmazonDynamoDBMapperClient
-        try {
-            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-            this.dynamoDBMapper = DynamoDBMapper.builder()
-                    .dynamoDBClient(dynamoDBClient)
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .build();
-        } catch (Exception e) {
-            Log.d(e.getClass().getName(), e.getMessage(), e);
-        }
 
         // instantiating AWSLoginModel(context, callback)
         awsLoginModel = new AWSLoginModel(this, this);
@@ -124,6 +112,7 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
                 whatProcess = "Sign In:";
                 break;
             case AWSLoginModel.PROCESS_REGISTER:
+                progressDialog.cancel();
                 whatProcess = "Registration:";
                 break;
             case AWSLoginModel.PROCESS_CONFIRM_REGISTRATION:

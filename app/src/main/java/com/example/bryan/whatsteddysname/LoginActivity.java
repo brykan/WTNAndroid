@@ -11,9 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
@@ -33,17 +31,6 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
 
         // instantiating AWSLoginModel(context, callback)
         awsLoginModel = new AWSLoginModel(this, this);
-
-        // Instantiate a AmazonDynamoDBMapperClient
-        try {
-            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-            this.dynamoDBMapper = DynamoDBMapper.builder()
-                    .dynamoDBClient(dynamoDBClient)
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .build();
-        } catch (Exception e) {
-            Log.d(e.getClass().getName(), e.getMessage(), e);
-        }
 
         loginBtn = (Button) findViewById(R.id.btn_login);
         loginBtn.setOnClickListener(new View.OnClickListener() {
