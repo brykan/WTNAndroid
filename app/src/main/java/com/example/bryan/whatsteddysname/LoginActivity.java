@@ -59,7 +59,7 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
         progressDialog.cancel();
         Toast.makeText(getBaseContext(), "Logged In", Toast.LENGTH_LONG).show();
         LoginActivity.this.startActivity(new Intent(LoginActivity.this, CollectionActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     @Override
@@ -77,6 +77,7 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
                 whatProcess = "Registration Confirmation:";
                 break;
         }
+        progressDialog.cancel();
         Toast.makeText(getBaseContext(), whatProcess + exception.getMessage(), Toast.LENGTH_LONG).show();
     }
 

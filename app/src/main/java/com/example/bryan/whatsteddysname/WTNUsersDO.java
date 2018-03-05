@@ -30,7 +30,7 @@ public class WTNUsersDO {
         this._userId = _userId;
     }
     @DynamoDBRangeKey(attributeName = "username")
-    @DynamoDBAttribute(attributeName = "username")
+    @DynamoDBIndexHashKey(attributeName = "username", globalSecondaryIndexName = "GetUser")
     public String getUsername() {
         return _username;
     }
