@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">What\'s Teddy\'s Name</string>
+    <string name="title_1">What\'s</string>
+    <string name="title_2">Teddy\'s</string>
+    <string name="title_3">Name?</string>
+    <string name="log_in_description">Click here to log in.</string>
+    <string name="log_in_text">Log In</string>
+    <string name="sign_up_text">Sign Up</string>
+    <string name="sign_up_description">Click here to sign up.</string>
+    <string name="login_title">What\'s Teddy\'s Name?</string>
+    <string name="input_username_hint">Username</string>
+    <string name="input_email_hint">Email</string>
+    <string name="input_password_hint">Password</string>
+    <string name="input_confirm_password_hint">Confirm Password</string>
+    <string name="create_account_text">Create Account</string>
+    <string name="already_a_member_text">Already a member? Login</string>
+    <string name="confirm_code_text">Enter confirmation code:</string>
+    <string name="forgot_password_text">Forgot password?</string>
+    <string name="collection_title">My Collection</string>
+    <string name="splash_loading_text">Loading...</string>
+    <string name="splash_title">What\'s Teddy\'s Name?</string>
 </resources>

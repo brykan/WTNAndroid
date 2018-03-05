@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/wtnbg"
-    tools:context="com.example.bryan.whatsteddysname.LoginActivity">
+    tools:context="com.example.bryan.whatsteddysname.SignupActivity">
 
     <TextView
         android:id="@+id/logInTitle"
@@ -24,7 +24,7 @@
         app:layout_constraintHorizontal_bias="0.507"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.139" />
+        app:layout_constraintVertical_bias="0.084" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -44,16 +44,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
-            android:layout_marginTop="70dp">
+            android:layout_marginTop="32dp">
 
             <android.support.design.widget.TextInputEditText
-                android:id="@+id/login_username"
+                android:id="@+id/input_username"
                 style="@style/Widget.AppCompat.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/input_username_hint"
                 android:inputType="textCapWords"
                 android:textCursorDrawable="@color/colorPrimaryDark"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- Email Label -->
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:layout_marginTop="14dp">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/input_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/input_email_hint"
+                android:inputType="textEmailAddress" />
         </android.support.design.widget.TextInputLayout>
 
         <!-- Password Label -->
@@ -64,31 +79,46 @@
             android:layout_marginTop="14dp">
 
             <android.support.design.widget.TextInputEditText
-                android:id="@+id/login_password"
+                android:id="@+id/input_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/input_password_hint"
                 android:inputType="textPassword" />
         </android.support.design.widget.TextInputLayout>
 
-        <!-- Login Button -->
+        <!-- Confirm Password Label -->
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:layout_marginTop="14dp">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/input_confirm_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/input_confirm_password_hint"
+                android:inputType="textPassword" />
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- Signup Button -->
         <android.support.v7.widget.AppCompatButton
-            android:id="@+id/btn_login"
+            android:id="@+id/btn_signup"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:padding="12dp"
             android:background="#2B3AAC"
             android:textColor="#FFFFFF"
-            android:text="@string/log_in_text" />
+            android:text="@string/create_account_text" />
 
-        <!-- Forgot your password -->
-        <TextView android:id="@+id/forgot_password"
+        <!-- Already a Member -->
+        <TextView android:id="@+id/link_login"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="@string/forgot_password_text"
+            android:text="@string/already_a_member_text"
             android:gravity="center"
             android:textSize="16sp"/>
     </LinearLayout>
