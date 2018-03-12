@@ -28,8 +28,10 @@ public class SplashActivity extends AppCompatActivity {
                     public void onComplete(StartupAuthResult authResults) {
                         if (authResults.isUserSignedIn()) {
                             startActivity(new Intent(SplashActivity.this, CollectionActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            finish();
                         } else {
                             startActivity(new Intent(SplashActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            finish();
                         }
                     }
                 }, 4000);

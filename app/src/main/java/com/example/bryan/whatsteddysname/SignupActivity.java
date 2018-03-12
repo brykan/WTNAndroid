@@ -96,6 +96,7 @@ public class SignupActivity extends AppCompatActivity implements AWSLoginHandler
         Toast.makeText(getBaseContext(), "Confirmation Success", Toast.LENGTH_LONG).show();
         SignupActivity.this.startActivity(new Intent(SignupActivity.this, LoginActivity.class)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        finish();
     }
 
     @Override
