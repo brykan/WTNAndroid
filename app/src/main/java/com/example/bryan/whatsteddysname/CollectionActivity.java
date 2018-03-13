@@ -1,8 +1,11 @@
 package com.example.bryan.whatsteddysname;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -20,6 +23,7 @@ import java.util.Map;
 public class CollectionActivity extends AppCompatActivity {
     private DynamoDBMapper dynamoDBMapper;
     private WTNUsersDO user;
+    private Button addBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,15 @@ public class CollectionActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.d(e.getClass().getName(), e.getMessage(), e);
         }
+
+        addBtn = (Button) findViewById(R.id.addItem);
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CollectionActivity.this, AddItemActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     public Thread getUser() {
