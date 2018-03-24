@@ -61,6 +61,7 @@ public class CollectionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(CollectionActivity.this, AddItemActivity.class);
+                intent.putExtra("USER_ID", user.getUserId());
                 startActivity(intent);
             }
         });
