@@ -6,14 +6,19 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.AWSStartupHandler;
+import com.amazonaws.mobile.client.AWSStartupResult;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 import java.io.File;
@@ -21,10 +26,21 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.amazonaws.mobileconnectors.s3.transferutility.*;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
+
+
 public class AddItemActivity extends AppCompatActivity {
     private ImageButton addImgBtn;
+    private Button addItemBtn;
+    private TextInputEditText addItemName;
+    private TextInputEditText addItemDes;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentPhotoPath;
+    private JSONObject item;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +54,19 @@ public class AddItemActivity extends AppCompatActivity {
                 dispatchTakePictureIntent();
             }
         });
+
+        addItemBtn = (Button) findViewById(R.id.add_item_btn);
+        addItemBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItem();
+            }
+        });
+
+        addItemName = (TextInputEditText) findViewById(R.id.add_item_name);
+        addItemDes = (TextInputEditText) findViewById(R.id.add_item_des);
+
+        item = new JSONObject();
     }
 
     @Override
@@ -88,6 +117,80 @@ public class AddItemActivity extends AppCompatActivity {
                 ".jpg",
                 storageDir);
         currentPhotoPath = image.getAbsolutePath();
+        try {
+            item.put("localPhotoPath", currentPhotoPath);
+        } catch (JSONException e) {
+            Log.d("JSONEXCEPTION", e.getMessage());
+        }
         return image;
+    }
+
+    private void addItem() {
+        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+           @Override
+            public void onComplete(AWSStartupResult awsStartupResult) {
+               uploadWithTransferUtility();
+           }
+        }).execute();
+    }
+
+    public void uploadWithTransferUtility() {
+        String itemName = addItemName.getText().toString();
+        String itemDes = addItemDes.getText().toString();
+
+        if (itemName.isEmpty()) {
+            addItemName.setError("Name must not be empty!");
+            return;
+        }
+
+        String fileLocation = getIntent().getStringExtra("USER_ID") + "/" + itemName + ".jpg";
+
+        try {
+            item.put("s3Location", fileLocation);
+            item.put("itemName", itemName);
+            item.put("itemDescription", itemDes);
+        } catch (JSONException e) {
+            Log.d("JSONEXCEPTION", e.getMessage());
+        }
+
+        TransferUtility transferUtility =
+                TransferUtility.builder()
+                    .context(getApplicationContext())
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
+                    .build();
+
+        TransferObserver uploadObserver =
+                transferUtility.upload(
+                        fileLocation,
+                        new File(currentPhotoPath));
+
+        uploadObserver.setTransferListener(new TransferListener() {
+            @Override
+            public void onStateChanged(int id, TransferState state) {
+                if (TransferState.COMPLETED == state) {
+                    // Handle complete upload
+                    Log.d("ADDITEMACTIVITYfinished", "UPLOAD DONE");
+                    Log.d("JSONOBJECT", item.toString());
+                    Intent output = new Intent();
+                    output.putExtra("itemResult", item.toString());
+                    setResult(RESULT_OK, output);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+                float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
+                int percentDone = (int) percentDonef;
+
+                Log.d("ADDITEMACTIVITY", "bytesCurrent: " + bytesCurrent + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
+            }
+
+            @Override
+            public void onError(int id, Exception ex) {
+                Log.d("UPLOADERROR", ex.getMessage());
+            }
+        });
     }
 }

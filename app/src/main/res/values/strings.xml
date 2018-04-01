@@ -25,4 +25,5 @@
     <string name="add_item_description">Description</string>
     <string name="add_item_name">Name</string>
     <string name="add_item_btn_title">Add Item</string>
+    <string name="item_image_des">Item Image</string>
 </resources>
