@@ -194,9 +194,8 @@ public class AddItemActivity extends AppCompatActivity {
                 if (TransferState.COMPLETED == state) {
                     // Handle complete upload
                     progressDialog.cancel();
-                    Log.d("ADDITEMACTIVITYfinished", "UPLOAD DONE");
-                    Log.d("JSONOBJECT", item.toString());
                     Intent output = new Intent();
+
                     output.putExtra("itemResult", item.toString());
                     setResult(RESULT_OK, output);
                     finish();
@@ -208,7 +207,7 @@ public class AddItemActivity extends AppCompatActivity {
                 float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
                 int percentDone = (int) percentDonef;
 
-                Log.d("ADDITEMACTIVITY", "bytesCurrent: " + bytesCurrent + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
+                Log.d("UPLOADINGTOS3", "bytesCurrent: " + bytesCurrent + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
             }
 
             @Override

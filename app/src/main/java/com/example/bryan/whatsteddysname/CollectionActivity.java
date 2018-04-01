@@ -98,7 +98,6 @@ public class CollectionActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ADD_ITEM && resultCode == RESULT_OK && data != null) {
-            Log.d("ONACTIVITYRESULT", "DANE IN HERE");
             List<String> items = user.getItems();
 
             items.add(data.getStringExtra("itemResult"));
@@ -111,7 +110,6 @@ public class CollectionActivity extends AppCompatActivity {
         super.onResume();
         List<String> items = user.getItems();
 
-        Log.d("ONRESUMEE", user.getItems().toString());
         ItemList adapter = new ItemList(this, items);
         itemList.setAdapter(adapter);
     }
