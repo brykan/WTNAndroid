@@ -1,8 +1,10 @@
 package com.example.bryan.whatsteddysname;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -14,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
@@ -41,6 +44,7 @@ public class AddItemActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentPhotoPath;
     private JSONObject item;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +69,8 @@ public class AddItemActivity extends AppCompatActivity {
 
         addItemName = (TextInputEditText) findViewById(R.id.add_item_name);
         addItemDes = (TextInputEditText) findViewById(R.id.add_item_des);
-
+        Drawable draw = addItemBtn.getBackground();
+        Log.d("LOLOOL", draw.toString());
         item = new JSONObject();
     }
 
@@ -126,6 +131,13 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     private void addItem() {
+        progressDialog = new ProgressDialog(AddItemActivity.this,
+                R.style.Theme_AppCompat_DayNight_Dialog);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Adding Item...");
+        progressDialog.show();
+
         AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
            @Override
             public void onComplete(AWSStartupResult awsStartupResult) {
@@ -137,9 +149,20 @@ public class AddItemActivity extends AppCompatActivity {
     public void uploadWithTransferUtility() {
         String itemName = addItemName.getText().toString();
         String itemDes = addItemDes.getText().toString();
+        Boolean valid = true;
+
+        if (addImgBtn.getDrawable().getConstantState()
+                .equals(getResources().getDrawable(android.R.drawable.ic_menu_camera).getConstantState())) {
+            Toast.makeText(getBaseContext(),  "Must select an image.", Toast.LENGTH_LONG).show();
+            valid = false;
+        }
 
         if (itemName.isEmpty()) {
             addItemName.setError("Name must not be empty!");
+            valid = false;
+        }
+
+        if(!valid) {
             return;
         }
 
@@ -170,6 +193,7 @@ public class AddItemActivity extends AppCompatActivity {
             public void onStateChanged(int id, TransferState state) {
                 if (TransferState.COMPLETED == state) {
                     // Handle complete upload
+                    progressDialog.cancel();
                     Log.d("ADDITEMACTIVITYfinished", "UPLOAD DONE");
                     Log.d("JSONOBJECT", item.toString());
                     Intent output = new Intent();
