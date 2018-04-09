@@ -45,7 +45,7 @@ public class ItemList extends ArrayAdapter<String> {
         View rowView = inflater.inflate(R.layout.single_item, null, true);
         TextView itemName = (TextView) rowView.findViewById(R.id.item_name);
         final ImageView itemImg = (ImageView) rowView.findViewById(R.id.item_img);
-        
+
         try {
             final JSONObject item = new JSONObject(items.get(position));
             String name = item.getString("itemName");
@@ -70,7 +70,7 @@ public class ItemList extends ArrayAdapter<String> {
     }
 
     public void dowloadData(final JSONObject item, final ImageView itemImg) {
-        AWSMobileClient.getInstance().initialize(getContext(), new AWSStartupHandler() {
+        AWSMobileClient.getInstance().initialize(this.context, new AWSStartupHandler() {
             @Override
             public void onComplete(AWSStartupResult awsStartupResult) {
                 downloadWithTransferUtility(item, itemImg);
