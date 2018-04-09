@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -26,7 +27,8 @@ public class CollectionActivity extends AppCompatActivity {
     private DynamoDBMapper dynamoDBMapper;
     private WTNUsersDO user;
     private Button addBtn;
-    static final int REQUEST_ADD_ITEM = 1;
+    static final int REQUEST_ADD_ITEM = 2;
+    static final int REQUEST_VIEW_ITEM = 3;
     private ListView itemList;
 
     @Override
@@ -112,5 +114,16 @@ public class CollectionActivity extends AppCompatActivity {
 
         ItemList adapter = new ItemList(this, items);
         itemList.setAdapter(adapter);
+
+        itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                List <String> items = user.getItems();
+                Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
+
+                intent.putExtra("ITEM", items.get(position));
+                startActivityForResult(intent, REQUEST_VIEW_ITEM);
+            }
+        });
     }
 }

@@ -1,16 +1,13 @@
 package com.example.bryan.whatsteddysname;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,50 +24,48 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.List;
 
-public class ItemList extends ArrayAdapter<String> {
-    private final Activity context;
-    private final List<String> items;
-
-    public ItemList(Activity context, List<String> items) {
-        super(context, R.layout.single_item, items);
-        this.context = context;
-        this.items = items;
-    }
+public class ItemActivity extends AppCompatActivity {
+    private JSONObject item;
+    private Button deleteItemBtn;
+    private Button editNameBtn;
+    private Button editDesBtn;
+    private EditText nameField;
+    private EditText desField;
+    private ImageView imgField;
 
     @Override
-    public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        View rowView = inflater.inflate(R.layout.single_item, null, true);
-        TextView itemName = (TextView) rowView.findViewById(R.id.item_name);
-        final ImageView itemImg = (ImageView) rowView.findViewById(R.id.item_img);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_item);
+
+        nameField = (EditText) findViewById(R.id.view_item_name_field);
+        desField = (EditText) findViewById(R.id.view_item_des_field);
+        imgField = (ImageView) findViewById(R.id.view_item_img);
 
         try {
-            final JSONObject item = new JSONObject(items.get(position));
-            String name = item.getString("itemName");
+            item = new JSONObject(getIntent().getStringExtra("ITEM"));
 
-            itemName.setText(name);
+            nameField.setText(item.getString("itemName"), TextView.BufferType.EDITABLE);
+            desField.setText(item.getString("itemDescription"), TextView.BufferType.EDITABLE);
 
-           File imgFile = new File(item.getString("localPhotoPath"));
+            File imgFile = new File(item.getString("localPhotoPath"));
 
             if(imgFile.exists()) {
-
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
 
-                itemImg.setImageBitmap(bitmap);
+                imgField.setBackground(obj);
             } else {
-                downloadImage(item, itemImg);
+                downloadImage(item, imgField);
             }
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
-
-        return rowView;
     }
 
     public void downloadImage(final JSONObject item, final ImageView itemImg) {
-        AWSMobileClient.getInstance().initialize(this.context, new AWSStartupHandler() {
+        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
             @Override
             public void onComplete(AWSStartupResult awsStartupResult) {
                 downloadWithTransferUtility(item, itemImg);
@@ -82,7 +77,7 @@ public class ItemList extends ArrayAdapter<String> {
 
         TransferUtility transferUtility =
                 TransferUtility.builder()
-                        .context(this.context)
+                        .context(getApplicationContext())
                         .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                         .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
                         .build();
@@ -100,11 +95,10 @@ public class ItemList extends ArrayAdapter<String> {
                         // Handle a completed upload.
                         try {
                             File imgFile = new File(item.getString("localPhotoPath"));
-
                             Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                            BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
 
-                            itemImg.setImageBitmap(bitmap);
-
+                            itemImg.setBackground(obj);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }
@@ -129,5 +123,4 @@ public class ItemList extends ArrayAdapter<String> {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
     }
-
 }
