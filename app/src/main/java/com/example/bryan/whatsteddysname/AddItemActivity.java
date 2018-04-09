@@ -163,6 +163,7 @@ public class AddItemActivity extends AppCompatActivity {
         }
 
         if(!valid) {
+            progressDialog.cancel();
             return;
         }
 

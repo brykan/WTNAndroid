@@ -104,6 +104,15 @@ public class CollectionActivity extends AppCompatActivity {
 
             items.add(data.getStringExtra("itemResult"));
             user.setItems(items);
+        } else if(requestCode == REQUEST_VIEW_ITEM && resultCode == ItemActivity.RESULT_DELETE_ITEM) {
+            List<String> items = user.getItems();
+            int position = data.getIntExtra("itemIndex", -1);
+
+            if(position != -1) {
+                items.remove(position);
+
+                user.setItems(items);
+            }
         }
     }
 
@@ -122,6 +131,7 @@ public class CollectionActivity extends AppCompatActivity {
                 Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
 
                 intent.putExtra("ITEM", items.get(position));
+                intent.putExtra("ITEMINDEX", position);
                 startActivityForResult(intent, REQUEST_VIEW_ITEM);
             }
         });

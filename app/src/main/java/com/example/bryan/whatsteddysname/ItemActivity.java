@@ -1,11 +1,18 @@
 package com.example.bryan.whatsteddysname;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,6 +33,7 @@ import org.json.JSONObject;
 import java.io.File;
 
 public class ItemActivity extends AppCompatActivity {
+    static final int RESULT_DELETE_ITEM = 4;
     private JSONObject item;
     private Button deleteItemBtn;
     private Button editNameBtn;
@@ -39,9 +47,104 @@ public class ItemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item);
 
-        nameField = (EditText) findViewById(R.id.view_item_name_field);
-        desField = (EditText) findViewById(R.id.view_item_des_field);
         imgField = (ImageView) findViewById(R.id.view_item_img);
+
+        nameField = (EditText) findViewById(R.id.view_item_name_field);
+        nameField.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if(i == KeyEvent.KEYCODE_ENTER) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(nameField.getWindowToken(), 0);
+
+                    nameField.setFocusable(false);
+                    nameField.setFocusableInTouchMode(false);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        desField = (EditText) findViewById(R.id.view_item_des_field);
+        desField.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if(i == KeyEvent.KEYCODE_BACK) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(desField.getWindowToken(), 0);
+
+                    desField.setFocusable(false);
+                    desField.setFocusableInTouchMode(false);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        editNameBtn = (Button) findViewById(R.id.edit_name_button);
+        editNameBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nameField.setFocusable(true);
+                nameField.setFocusableInTouchMode(true);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                nameField.requestFocus();
+                nameField.setSelection(nameField.getText().length());
+                imm.showSoftInput(nameField, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+
+        editDesBtn = (Button) findViewById(R.id.edit_des_button);
+        editDesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                desField.setFocusable(true);
+                desField.setFocusableInTouchMode(true);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                desField.requestFocus();
+                desField.setSelection(desField.getText().length());
+                imm.showSoftInput(desField, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+
+        final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        Intent output = new Intent();
+
+                        output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
+                        setResult(RESULT_DELETE_ITEM, output);
+                        dialog.dismiss();
+                        finish();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        };
+
+        deleteItemBtn = (Button) findViewById(R.id.delete_item_btn);
+        deleteItemBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setMessage("Are you sure you want to delete?")
+                        .setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener)
+                        .show();
+
+            }
+        });
 
         try {
             item = new JSONObject(getIntent().getStringExtra("ITEM"));
