@@ -9,6 +9,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -34,10 +36,12 @@ import java.io.File;
 
 public class ItemActivity extends AppCompatActivity {
     static final int RESULT_DELETE_ITEM = 4;
+    static final int RESULT_UPDATE_ITEM = 5;
     private JSONObject item;
     private Button deleteItemBtn;
     private Button editNameBtn;
     private Button editDesBtn;
+    private Button saveChangesBtn;
     private EditText nameField;
     private EditText desField;
     private ImageView imgField;
@@ -48,6 +52,57 @@ public class ItemActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item);
 
         imgField = (ImageView) findViewById(R.id.view_item_img);
+
+        final DialogInterface.OnClickListener saveItemListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        try {
+                            Intent output = new Intent();
+                            item = new JSONObject(getIntent().getStringExtra("ITEM"));
+                            String oldName = item.getString("itemName");
+                            String oldDes = item.getString("itemDescription");
+                            String newName = nameField.getText().toString();
+                            String newDes = desField.getText().toString();
+
+                            if(!newName.equals(oldName)) {
+                                item.put("itemName", newName);
+                            }
+
+                            if(!newDes.equals(oldDes)) {
+                                item.put("itemDescription", newDes);
+                            }
+
+                            output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
+                            output.putExtra("updatedItem", item.toString());
+                            setResult(RESULT_UPDATE_ITEM, output);
+                            dialog.dismiss();
+                            finish();
+                        } catch(JSONException e) {
+                            Log.d("JSONEXCEPTION", e.getMessage());
+                        }
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        };
+        saveChangesBtn = (Button) findViewById(R.id.save_item_changes_btn);
+        saveChangesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setMessage("Save item changes?")
+                        .setPositiveButton("Yes", saveItemListener)
+                        .setNegativeButton("No", saveItemListener)
+                        .show();
+            }
+        });
 
         nameField = (EditText) findViewById(R.id.view_item_name_field);
         nameField.setOnKeyListener(new View.OnKeyListener() {
@@ -65,21 +120,56 @@ public class ItemActivity extends AppCompatActivity {
                 }
             }
         });
+        nameField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
+                try {
+                    item = new JSONObject(getIntent().getStringExtra("ITEM"));
+                    String oldName = item.getString("itemName");
+
+                    if(!oldName.equals(charSequence.toString())) {
+                        saveChangesBtn.setVisibility(View.VISIBLE);
+                    } else if(oldName.equals(charSequence.toString())) {
+                        saveChangesBtn.setVisibility(View.INVISIBLE);
+                    }
+                } catch(JSONException e) {
+                    Log.d("JSONEXCEPTION", e.getMessage());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
 
         desField = (EditText) findViewById(R.id.view_item_des_field);
-        desField.setOnKeyListener(new View.OnKeyListener() {
+        desField.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if(i == KeyEvent.KEYCODE_BACK) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(desField.getWindowToken(), 0);
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+            }
 
-                    desField.setFocusable(false);
-                    desField.setFocusableInTouchMode(false);
-                    return true;
-                } else {
-                    return false;
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
+                try {
+                    item = new JSONObject(getIntent().getStringExtra("ITEM"));
+                    String oldDes = item.getString("itemDescription");
+
+                    if(!oldDes.equals(charSequence.toString())) {
+                        saveChangesBtn.setVisibility(View.VISIBLE);
+                    } else if(oldDes.equals(charSequence.toString())) {
+                        saveChangesBtn.setVisibility(View.INVISIBLE);
+                    }
+                } catch(JSONException e) {
+                    Log.d("JSONEXCEPTION", e.getMessage());
                 }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
             }
         });
 
@@ -111,7 +201,7 @@ public class ItemActivity extends AppCompatActivity {
             }
         });
 
-        final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
@@ -139,10 +229,9 @@ public class ItemActivity extends AppCompatActivity {
             public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
                 builder.setMessage("Are you sure you want to delete?")
-                        .setPositiveButton("Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener)
+                        .setPositiveButton("Yes", deleteItemListner)
+                        .setNegativeButton("No", deleteItemListner)
                         .show();
-
             }
         });
 

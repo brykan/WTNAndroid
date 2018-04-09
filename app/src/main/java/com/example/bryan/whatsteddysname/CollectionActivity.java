@@ -1,5 +1,6 @@
 package com.example.bryan.whatsteddysname;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -104,14 +105,29 @@ public class CollectionActivity extends AppCompatActivity {
 
             items.add(data.getStringExtra("itemResult"));
             user.setItems(items);
-        } else if(requestCode == REQUEST_VIEW_ITEM && resultCode == ItemActivity.RESULT_DELETE_ITEM) {
-            List<String> items = user.getItems();
-            int position = data.getIntExtra("itemIndex", -1);
+            updateUser(user);
+        } else if(requestCode == REQUEST_VIEW_ITEM) {
+            if(resultCode == ItemActivity.RESULT_DELETE_ITEM) {
+                List<String> items = user.getItems();
+                int position = data.getIntExtra("itemIndex", -1);
 
-            if(position != -1) {
-                items.remove(position);
+                if (position != -1) {
+                    items.remove(position);
 
-                user.setItems(items);
+                    user.setItems(items);
+                    updateUser(user);
+                }
+            } else if(resultCode == ItemActivity.RESULT_UPDATE_ITEM) {
+                List<String> items = user.getItems();
+                String updatedItem = data.getStringExtra("updatedItem");
+                int position = data.getIntExtra("itemIndex", -1);
+
+                if (position != -1) {
+                    items.set(position, updatedItem);
+
+                    user.setItems(items);
+                    updateUser(user);
+                }
             }
         }
     }
@@ -135,5 +151,15 @@ public class CollectionActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_VIEW_ITEM);
             }
         });
+    }
+
+    public void updateUser(final WTNUsersDO user) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dynamoDBMapper.save(user);
+                // Item updated
+            }
+        }).start();
     }
 }

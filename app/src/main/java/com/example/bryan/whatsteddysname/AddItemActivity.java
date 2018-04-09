@@ -45,6 +45,7 @@ public class AddItemActivity extends AppCompatActivity {
     private String currentPhotoPath;
     private JSONObject item;
     private ProgressDialog progressDialog;
+    private String itemTimeStamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +116,7 @@ public class AddItemActivity extends AppCompatActivity {
         // Create image file name
         Intent intent = getIntent();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        itemTimeStamp = timeStamp;
         String imageFileName =  intent.getStringExtra("USER_ID")+ "_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -167,7 +169,7 @@ public class AddItemActivity extends AppCompatActivity {
             return;
         }
 
-        String fileLocation = getIntent().getStringExtra("USER_ID") + "/" + itemName + ".jpg";
+        String fileLocation = getIntent().getStringExtra("USER_ID") + "/" + itemTimeStamp + ".jpg";
 
         try {
             item.put("s3Location", fileLocation);
