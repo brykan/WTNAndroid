@@ -33,4 +33,7 @@ dependencies {
     // Cognito UserPools for SignIn
     compile 'com.android.support:support-v4:26.+'
     compile('com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar') { transitive = true; }
+    // SDK components for S3
+    compile 'com.amazonaws:aws-android-sdk-s3:2.6.+'
+    compile 'com.amazonaws:aws-android-sdk-cognito:2.6.+'
 }

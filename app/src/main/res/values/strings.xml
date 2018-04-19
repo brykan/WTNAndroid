@@ -19,4 +19,15 @@
     <string name="collection_title">My Collection</string>
     <string name="splash_loading_text">Loading...</string>
     <string name="splash_title">What\'s Teddy\'s Name?</string>
+    <string name="add_button_text">+</string>
+    <string name="insert_item_image_here">Insert Item Image Here</string>
+    <string name="add_item_title">Add Item</string>
+    <string name="add_item_description">Description</string>
+    <string name="add_item_name">Name</string>
+    <string name="add_item_btn_title">Add Item</string>
+    <string name="item_image_des">Item Image</string>
+    <string name="item_image_content_des">Item Image</string>
+    <string name="view_delete_item_txt">Delete</string>
+    <string name="view_item_edit_text">Edit</string>
+    <string name="save_changes">Save Changes</string>
 </resources>
