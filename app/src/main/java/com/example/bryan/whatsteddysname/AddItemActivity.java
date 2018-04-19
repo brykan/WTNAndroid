@@ -169,7 +169,7 @@ public class AddItemActivity extends AppCompatActivity {
             return;
         }
 
-        String fileLocation = getIntent().getStringExtra("USER_ID") + "/" + itemTimeStamp + ".jpg";
+        String fileLocation = "public/" + getIntent().getStringExtra("USER_ID") + "/" + itemTimeStamp + ".jpg";
 
         try {
             item.put("s3Location", fileLocation);
