@@ -4,11 +4,14 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -31,6 +34,8 @@ public class CollectionActivity extends AppCompatActivity {
     static final int REQUEST_ADD_ITEM = 2;
     static final int REQUEST_VIEW_ITEM = 3;
     private ListView itemList;
+    private ItemList adapter;
+    private EditText searchBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,24 @@ public class CollectionActivity extends AppCompatActivity {
         });
 
         itemList = (ListView) findViewById(R.id.itemList);
+
+        searchBar = (EditText) findViewById(R.id.searchBar);
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                adapter.getFilter().filter(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
     }
 
     public Thread getUser() {
@@ -137,7 +160,7 @@ public class CollectionActivity extends AppCompatActivity {
         super.onResume();
         List<String> items = user.getItems();
 
-        ItemList adapter = new ItemList(this, items);
+        adapter = new ItemList(this, items);
         itemList.setAdapter(adapter);
 
         itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {

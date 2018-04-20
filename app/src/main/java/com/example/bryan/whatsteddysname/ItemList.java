@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,16 +29,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ItemList extends ArrayAdapter<String> {
+public class ItemList extends ArrayAdapter<String> implements Filterable {
     private final Activity context;
-    private final List<String> items;
+    private List<String> items;
+    private List<String> filteredList;
 
     public ItemList(Activity context, List<String> items) {
         super(context, R.layout.single_item, items);
         this.context = context;
         this.items = items;
+        this.filteredList = items;
+    }
+
+    @Override
+    public int getCount() {
+        return filteredList.size();
     }
 
     @Override
@@ -47,7 +57,7 @@ public class ItemList extends ArrayAdapter<String> {
         final ImageView itemImg = (ImageView) rowView.findViewById(R.id.item_img);
 
         try {
-            final JSONObject item = new JSONObject(items.get(position));
+            final JSONObject item = new JSONObject(filteredList.get(position));
             String name = item.getString("itemName");
 
             itemName.setText(name);
@@ -130,4 +140,46 @@ public class ItemList extends ArrayAdapter<String> {
         }
     }
 
+    @Override
+    public Filter getFilter() {
+        final Filter filter = new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults results = new FilterResults();
+                List<String> filteredItems = new ArrayList<>();
+
+                if(charSequence == null || charSequence.length() == 0) {
+                    results.count = items.size();
+                    results.values = items;
+                } else {
+                    charSequence = charSequence.toString().toLowerCase();
+
+                    for (int i = 0; i < items.size(); i++) {
+                        try {
+                            final JSONObject item = new JSONObject(items.get(i));
+                            String name = item.getString("itemName");
+
+                            if(name.toLowerCase().contains(charSequence)) {
+                                filteredItems.add(items.get(i));
+                            }
+                        } catch(JSONException e) {
+                            Log.d("JSONEXCEPTION", e.getMessage());
+                        }
+                    }
+
+                    results.count = filteredItems.size();
+                    results.values = filteredItems;
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredList = (List<String>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+
+        return filter;
+    }
 }
