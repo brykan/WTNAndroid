@@ -3,9 +3,14 @@ package com.example.bryan.whatsteddysname;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,6 +38,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ItemActivity extends AppCompatActivity {
     static final int RESULT_DELETE_ITEM = 4;
@@ -236,16 +242,20 @@ public class ItemActivity extends AppCompatActivity {
         });
 
         try {
+            String localPhotoPath = item.getString("localPhotoPath");
             item = new JSONObject(getIntent().getStringExtra("ITEM"));
 
             nameField.setText(item.getString("itemName"), TextView.BufferType.EDITABLE);
             desField.setText(item.getString("itemDescription"), TextView.BufferType.EDITABLE);
 
-            File imgFile = new File(item.getString("localPhotoPath"));
+            File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
+                scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
+
+                BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
 
                 imgField.setBackground(obj);
             } else {
@@ -286,9 +296,14 @@ public class ItemActivity extends AppCompatActivity {
                     if (TransferState.COMPLETED == state) {
                         // Handle a completed upload.
                         try {
-                            File imgFile = new File(item.getString("localPhotoPath"));
+                            String localPhotoPath = item.getString("localPhotoPath");
+                            File imgFile = new File(localPhotoPath);
                             Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                            BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
+
+                            scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
+                            
+                            BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
 
                             itemImg.setBackground(obj);
                         } catch(JSONException e) {
@@ -314,5 +329,45 @@ public class ItemActivity extends AppCompatActivity {
         } catch (JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
+    }
+
+    public Bitmap rotateImageIfRequired(Bitmap img, String currentPhotoPath) {
+        Uri uri = Uri.parse("file://" + currentPhotoPath);
+        if (uri.getScheme().equals("content")) {
+            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
+            Cursor c = this.getContentResolver().query(uri, projection, null, null, null);
+            if (c.moveToFirst()) {
+                final int rotation = c.getInt(0);
+                c.close();
+                return rotateImage(img, rotation);
+            }
+            return img;
+        } else {
+            try {
+                ExifInterface ei = new ExifInterface(uri.getPath());
+                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                switch (orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        return rotateImage(img, 90);
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        return rotateImage(img, 180);
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        return rotateImage(img, 270);
+                    default:
+                        return img;
+                }
+            } catch (IOException e) {
+                Log.d("EXIFERROR", e.getMessage());
+            }
+            return img;
+        }
+    }
+
+    public Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        return rotatedImg;
     }
 }
