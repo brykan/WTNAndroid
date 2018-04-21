@@ -139,9 +139,7 @@ public class AddItemActivity extends AppCompatActivity {
     private File createGrayImage() throws IOException {
         // Create image file name
         Intent intent = getIntent();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        itemTimeStamp = timeStamp;
-        String imageFileName =  "gray_" + intent.getStringExtra("USER_ID")+ "_" + timeStamp + "_";
+        String imageFileName =  "gray_" + intent.getStringExtra("USER_ID")+ "_" + itemTimeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,
@@ -240,7 +238,8 @@ public class AddItemActivity extends AppCompatActivity {
                 float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
                 int percentDone = (int) percentDonef;
 
-                Log.d("UPLOADINGTOS3", "bytesCurrent: " + bytesCurrent + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
+                Log.d("UPLOADINGTOS3", "bytesCurrent: " + bytesCurrent +
+                        " bytesTotal: " + bytesTotal + " " + percentDone + "%");
             }
 
             @Override
