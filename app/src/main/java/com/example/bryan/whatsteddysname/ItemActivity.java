@@ -242,8 +242,8 @@ public class ItemActivity extends AppCompatActivity {
         });
 
         try {
-            String localPhotoPath = item.getString("localPhotoPath");
             item = new JSONObject(getIntent().getStringExtra("ITEM"));
+            String localPhotoPath = item.getString("localPhotoPath");
 
             nameField.setText(item.getString("itemName"), TextView.BufferType.EDITABLE);
             desField.setText(item.getString("itemDescription"), TextView.BufferType.EDITABLE);
