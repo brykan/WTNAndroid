@@ -251,7 +251,7 @@ public class ItemActivity extends AppCompatActivity {
             File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
                 scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
 
@@ -298,11 +298,11 @@ public class ItemActivity extends AppCompatActivity {
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
                             Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
 
                             scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
-                            
+
                             BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
 
                             itemImg.setBackground(obj);

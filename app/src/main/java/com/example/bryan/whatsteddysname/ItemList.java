@@ -71,7 +71,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
 
             if(imgFile.exists()) {
 
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
                 scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
 
@@ -119,7 +119,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
 
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
                             Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
 
                             scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);

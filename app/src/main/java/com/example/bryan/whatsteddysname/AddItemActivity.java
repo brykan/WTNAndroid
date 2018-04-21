@@ -267,7 +267,7 @@ public class AddItemActivity extends AppCompatActivity {
             File input = new File(item.getString("localPhotoPath"));
 
             if(input.exists()) {
-                Bitmap src = BitmapFactory.decodeFile(input.getAbsolutePath());
+                Bitmap src = BitmapFactory.decodeFile(input.getPath());
                 Bitmap out = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
                 // get image size
                 int width = src.getWidth();
