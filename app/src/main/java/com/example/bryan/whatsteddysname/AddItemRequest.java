@@ -48,7 +48,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
     private JSONObject item;
     private String itemName;
     private String itemDes;
-    private Context context;
+    private AddItemActivity context;
     private Context appContext;
     private String user_id;
     private String timestamp;
@@ -57,7 +57,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
     private Boolean finish = false;
 
     AddItemRequest(
-            Context context,
+            AddItemActivity context,
             JSONObject item,
             String itemName,
             String itemDes,
@@ -78,7 +78,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
     //Show progress Dialog here
-        progressDialog = new ProgressDialog(this.context,
+        progressDialog = new ProgressDialog(context,
                 R.style.Theme_AppCompat_DayNight_Dialog);
         progressDialog.setIndeterminate(true);
         progressDialog.setCancelable(false);
@@ -94,7 +94,6 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
 
         Intent output = new Intent();
 
-        Log.d("ITEMRESULT", item.toString());
         output.putExtra("itemResult", item.toString());
         ((Activity) context).setResult(RESULT_OK, output);
         progressDialog.cancel();
@@ -175,8 +174,8 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
 
             if(input.exists()) {
                 Bitmap src = BitmapFactory.decodeFile(input.getPath());
+                src = rotateImageIfRequired(src);
                 Bitmap out = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
-                out = rotateImage(out, 180);
 
                 Canvas canvas = new Canvas(out);
                 Paint paint = new Paint();
@@ -221,7 +220,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
     }
 
     public Bitmap rotateImageIfRequired(Bitmap img) {
-        Uri uri = Uri.parse("file://" + grayPhotoPath);
+        Uri uri = Uri.fromFile(new File(photoPath));
         if (uri.getScheme().equals("content")) {
             String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
             Cursor c = context.getContentResolver().query(uri, projection, null, null, null);

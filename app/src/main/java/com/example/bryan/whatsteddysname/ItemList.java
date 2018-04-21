@@ -27,6 +27,8 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,12 +42,22 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
     private final Activity context;
     private List<String> items;
     private List<String> filteredList;
+    private RequestOptions options;
+
+    private static class ViewHolder {
+        public TextView textView;
+        public ImageView imageView;
+    }
 
     public ItemList(Activity context, List<String> items) {
         super(context, R.layout.single_item, items);
         this.context = context;
         this.items = items;
         this.filteredList = items;
+        options = new RequestOptions()
+                .placeholder(R.drawable.placeholder)
+                .override(50, 50)
+                .centerCrop();
     }
 
     @Override
@@ -55,35 +67,38 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        View rowView = inflater.inflate(R.layout.single_item, null, true);
-        TextView itemName = (TextView) rowView.findViewById(R.id.item_name);
-        final ImageView itemImg = (ImageView) rowView.findViewById(R.id.item_img);
+        ViewHolder holder = null;
+        if(view == null) {
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            holder = new ViewHolder();
+
+            view = inflater.inflate(R.layout.single_item, parent, false);
+            holder.textView = (TextView) view.findViewById(R.id.item_name);
+            holder.imageView = (ImageView) view.findViewById(R.id.item_img);
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
+        }
 
         try {
             final JSONObject item = new JSONObject(filteredList.get(position));
             String name = item.getString("itemName");
             String localPhotoPath = item.getString("localPhotoPath");
 
-            itemName.setText(name);
+            holder.textView.setText(name);
 
-           File imgFile = new File(localPhotoPath);
+            File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
-
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
-                scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
-
-                itemImg.setImageBitmap(scaledBitmap);
+                Glide.with(context).load(imgFile).apply(options).into(holder.imageView);
             } else {
-                downloadImage(item, itemImg);
+                downloadImage(item, holder.imageView);
             }
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
 
-        return rowView;
+        return view;
     }
 
     public void downloadImage(final JSONObject item, final ImageView itemImg) {
@@ -195,7 +210,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
     }
 
     public Bitmap rotateImageIfRequired(Bitmap img, String currentPhotoPath) {
-        Uri uri = Uri.parse("file://" + currentPhotoPath);
+        Uri uri = Uri.fromFile(new File(currentPhotoPath));
         if (uri.getScheme().equals("content")) {
             String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
             Cursor c = this.context.getContentResolver().query(uri, projection, null, null, null);

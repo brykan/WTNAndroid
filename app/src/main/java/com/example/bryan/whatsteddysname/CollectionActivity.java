@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -68,7 +69,7 @@ public class CollectionActivity extends AppCompatActivity {
     private String preSearchPhotoPath;
     private String actualSearchPhotoPath;
     private ProgressDialog searchDialog;
-
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +139,35 @@ public class CollectionActivity extends AppCompatActivity {
                 dispatchTakePictureIntent();
             }
         });
+
+        List<String> items = user.getItems();
+
+        adapter = new ItemList(this, items);
+
+        itemList.setAdapter(adapter);
+
+        itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                List <String> items = user.getItems();
+                Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
+
+                intent.putExtra("ITEM", items.get(position));
+                intent.putExtra("ITEMINDEX", position);
+                startActivityForResult(intent, REQUEST_VIEW_ITEM);
+            }
+        });
+
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        swipeLayout.setColorSchemeResources(android.R.color.holo_blue_light);
+        swipeLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+
+                    }
+                }
+        );
     }
 
     private void dispatchTakePictureIntent() {
@@ -215,10 +245,10 @@ public class CollectionActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ADD_ITEM && resultCode == RESULT_OK && data != null) {
             List<String> items = user.getItems();
 
-            Log.d("ONACTIVITYRESULT", data.getStringExtra("itemResult"));
             items.add(data.getStringExtra("itemResult"));
             user.setItems(items);
             updateUser(user);
+            adapter.notifyDataSetChanged();
         } else if(requestCode == REQUEST_VIEW_ITEM) {
             if(resultCode == ItemActivity.RESULT_DELETE_ITEM) {
                 List<String> items = user.getItems();
@@ -229,6 +259,7 @@ public class CollectionActivity extends AppCompatActivity {
 
                     user.setItems(items);
                     updateUser(user);
+                    adapter.notifyDataSetChanged();
                 }
             } else if(resultCode == ItemActivity.RESULT_UPDATE_ITEM) {
                 List<String> items = user.getItems();
@@ -240,6 +271,7 @@ public class CollectionActivity extends AppCompatActivity {
 
                     user.setItems(items);
                     updateUser(user);
+                    adapter.notifyDataSetChanged();
                 }
             }
         } else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
@@ -264,22 +296,6 @@ public class CollectionActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        List<String> items = user.getItems();
-
-        adapter = new ItemList(this, items);
-        itemList.setAdapter(adapter);
-
-        itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                List <String> items = user.getItems();
-                Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
-
-                intent.putExtra("ITEM", items.get(position));
-                intent.putExtra("ITEMINDEX", position);
-                startActivityForResult(intent, REQUEST_VIEW_ITEM);
-            }
-        });
     }
 
     public void updateUser(final WTNUsersDO user) {

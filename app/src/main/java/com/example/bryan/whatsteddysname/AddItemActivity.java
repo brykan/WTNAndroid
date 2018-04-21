@@ -147,7 +147,7 @@ public class AddItemActivity extends AppCompatActivity {
 
         AddItemRequest request =
                 new AddItemRequest(
-                        this,
+                        AddItemActivity.this,
                         item,
                         itemName,
                         itemDes,

@@ -332,7 +332,7 @@ public class ItemActivity extends AppCompatActivity {
     }
 
     public Bitmap rotateImageIfRequired(Bitmap img, String currentPhotoPath) {
-        Uri uri = Uri.parse("file://" + currentPhotoPath);
+        Uri uri = Uri.fromFile(new File(currentPhotoPath));
         if (uri.getScheme().equals("content")) {
             String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
             Cursor c = this.getContentResolver().query(uri, projection, null, null, null);
