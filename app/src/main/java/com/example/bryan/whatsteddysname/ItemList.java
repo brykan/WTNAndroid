@@ -67,8 +67,9 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
             if(imgFile.exists()) {
 
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
 
-                itemImg.setImageBitmap(bitmap);
+                itemImg.setImageBitmap(scaledBitmap);
             } else {
                 downloadImage(item, itemImg);
             }

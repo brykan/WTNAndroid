@@ -82,10 +82,11 @@ public class AddItemActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
             try {
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + currentPhotoPath));
-                BitmapDrawable obj = new BitmapDrawable(getResources(), imageBitmap);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(imageBitmap, 512, 512, false);
+
+                BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
                 addImgBtn.setBackground(obj);
                 addImgBtn.setImageResource(android.R.color.transparent);
             } catch(IOException e) {
