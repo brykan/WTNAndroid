@@ -3,6 +3,8 @@ package com.example.bryan.whatsteddysname;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -25,6 +27,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -43,6 +46,7 @@ public class AddItemActivity extends AppCompatActivity {
     private TextInputEditText addItemDes;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentPhotoPath;
+    private String currentGrayPhotoPath;
     private JSONObject item;
     private ProgressDialog progressDialog;
     private String itemTimeStamp;
@@ -71,7 +75,7 @@ public class AddItemActivity extends AppCompatActivity {
         addItemName = (TextInputEditText) findViewById(R.id.add_item_name);
         addItemDes = (TextInputEditText) findViewById(R.id.add_item_des);
         Drawable draw = addItemBtn.getBackground();
-        Log.d("LOLOOL", draw.toString());
+
         item = new JSONObject();
     }
 
@@ -132,6 +136,21 @@ public class AddItemActivity extends AppCompatActivity {
         return image;
     }
 
+    private File createGrayImage() throws IOException {
+        // Create image file name
+        Intent intent = getIntent();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        itemTimeStamp = timeStamp;
+        String imageFileName =  "gray_" + intent.getStringExtra("USER_ID")+ "_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir);
+        currentGrayPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
     private void addItem() {
         progressDialog = new ProgressDialog(AddItemActivity.this,
                 R.style.Theme_AppCompat_DayNight_Dialog);
@@ -139,6 +158,8 @@ public class AddItemActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Adding Item...");
         progressDialog.show();
+
+        addGrayScaleImage(item);
 
         AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
            @Override
@@ -170,6 +191,8 @@ public class AddItemActivity extends AppCompatActivity {
         }
 
         String fileLocation = "public/" + getIntent().getStringExtra("USER_ID") + "/" + itemTimeStamp + ".jpg";
+        String grayFileLocation = "public/" + getIntent().getStringExtra("USER_ID") + "/gray_" + itemTimeStamp + ".jpg";
+
 
         try {
             item.put("s3Location", fileLocation);
@@ -179,29 +202,36 @@ public class AddItemActivity extends AppCompatActivity {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
 
+        uploadPhoto(currentPhotoPath, fileLocation, false);
+        uploadPhoto(currentGrayPhotoPath, grayFileLocation, true);
+    }
+
+    public void uploadPhoto(final String path, String fileLocation, final Boolean end) {
         TransferUtility transferUtility =
                 TransferUtility.builder()
-                    .context(getApplicationContext())
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
-                    .build();
+                        .context(getApplicationContext())
+                        .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                        .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
+                        .build();
 
         TransferObserver uploadObserver =
                 transferUtility.upload(
                         fileLocation,
-                        new File(currentPhotoPath));
+                        new File(path));
 
         uploadObserver.setTransferListener(new TransferListener() {
             @Override
             public void onStateChanged(int id, TransferState state) {
                 if (TransferState.COMPLETED == state) {
                     // Handle complete upload
-                    progressDialog.cancel();
-                    Intent output = new Intent();
+                    if(end) {
+                        progressDialog.cancel();
+                        Intent output = new Intent();
 
-                    output.putExtra("itemResult", item.toString());
-                    setResult(RESULT_OK, output);
-                    finish();
+                        output.putExtra("itemResult", item.toString());
+                        setResult(RESULT_OK, output);
+                        finish();
+                    }
                 }
             }
 
@@ -218,5 +248,60 @@ public class AddItemActivity extends AppCompatActivity {
                 Log.d("UPLOADERROR", ex.getMessage());
             }
         });
+    }
+
+    public void addGrayScaleImage(JSONObject item) {
+        // constant factors
+        final double GS_RED = 0.299;
+        final double GS_GREEN = 0.587;
+        final double GS_BLUE = 0.114;
+        // pixel information
+        int A, R, G, B;
+        int pixel;
+
+        try {
+            File input = new File(item.getString("localPhotoPath"));
+
+            if(input.exists()) {
+                Bitmap src = BitmapFactory.decodeFile(input.getAbsolutePath());
+                Bitmap out = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
+                // get image size
+                int width = src.getWidth();
+                int height = src.getHeight();
+
+                // scan through every single pixel
+                for(int x = 0; x < width; ++x) {
+                    for(int y = 0; y < height; ++y) {
+                        // get one pixel color
+                        pixel = src.getPixel(x, y);
+                        // retrieve color of all channels
+                        A = Color.alpha(pixel);
+                        R = Color.red(pixel);
+                        G = Color.green(pixel);
+                        B = Color.blue(pixel);
+                        // take conversion up to one single value
+                        R = G = B = (int)(GS_RED * R + GS_GREEN * G + GS_BLUE * B);
+                        // set new pixel color to output bitmap
+                        out.setPixel(x, y, Color.argb(A, R, G, B));
+                    }
+                }
+
+                File outFile = null;
+                try {
+                    outFile = createGrayImage();
+
+                    if(outFile != null) {
+                        FileOutputStream outStream = new FileOutputStream(outFile);
+                        out.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                        outStream.flush();
+                        outStream.close();
+                    }
+                } catch (IOException e) {
+                    Log.d("IOEXCEPTION", e.getMessage());
+                }
+            }
+        } catch(JSONException e) {
+            Log.d("JSONEXCEPTION", e.getMessage());
+        }
     }
 }
