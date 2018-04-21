@@ -242,8 +242,6 @@ public class CollectionActivity extends AppCompatActivity {
                 }
             }
         } else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-
             searchDialog = new ProgressDialog(CollectionActivity.this,
                     R.style.Theme_AppCompat_DayNight_Dialog);
             searchDialog.setIndeterminate(true);
