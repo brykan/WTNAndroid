@@ -252,12 +252,12 @@ public class ItemActivity extends AppCompatActivity {
 
             if(imgFile.exists()) {
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 3, bitmap.getHeight() / 3, false);
                 scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
 
                 BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
 
-                imgField.setBackground(obj);
+                imgField.setImageBitmap(scaledBitmap);
             } else {
                 downloadImage(item, imgField);
             }

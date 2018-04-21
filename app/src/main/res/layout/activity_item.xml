@@ -4,31 +4,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.bryan.whatsteddysname.Item">
+    tools:context="com.example.bryan.whatsteddysname.ItemActivity">
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/headerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/itemView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
             android:id="@+id/delete_item_btn"
             style="@android:style/Widget.DeviceDefault.Button.Borderless"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:layout_weight="1"
             android:text="@string/view_delete_item_txt"
             android:textAlignment="center"
-            android:textColor="@android:color/holo_red_dark" />
+            android:textColor="@android:color/holo_red_dark"
+            tools:layout_editor_absoluteX="272dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/itemView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/save_item_changes_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/headerView">
 
         <ImageView
             android:id="@+id/view_item_img"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="200dp"
             android:contentDescription="@string/item_image_content_des"
             app:srcCompat="@android:color/transparent"
             tools:layout_editor_absoluteX="150dp"
@@ -119,17 +134,21 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/save_item_changes_btn"
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/save_changes"
-            android:textAlignment="center"
-            android:textSize="16sp"
-            android:visibility="invisible" />
-
     </LinearLayout>
+
+    <Button
+        android:id="@+id/save_item_changes_btn"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/save_changes"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemView" />
 
 </android.support.constraint.ConstraintLayout>

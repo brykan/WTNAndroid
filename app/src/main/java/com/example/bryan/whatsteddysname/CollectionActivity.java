@@ -215,6 +215,7 @@ public class CollectionActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ADD_ITEM && resultCode == RESULT_OK && data != null) {
             List<String> items = user.getItems();
 
+            Log.d("ONACTIVITYRESULT", data.getStringExtra("itemResult"));
             items.add(data.getStringExtra("itemResult"));
             user.setItems(items);
             updateUser(user);
