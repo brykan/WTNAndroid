@@ -6,30 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.bryan.whatsteddysname.ItemActivity">
 
-    <LinearLayout
-        android:id="@+id/headerView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/itemView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <Button
-            android:id="@+id/delete_item_btn"
-            style="@android:style/Widget.DeviceDefault.Button.Borderless"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:paddingTop="0dp"
-            android:layout_weight="1"
-            android:text="@string/view_delete_item_txt"
-            android:textAlignment="center"
-            android:textColor="@android:color/holo_red_dark"
-            tools:layout_editor_absoluteX="272dp" />
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/itemView"
@@ -39,7 +15,7 @@
         app:layout_constraintBottom_toTopOf="@id/save_item_changes_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/headerView">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/view_item_img"
@@ -72,14 +48,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="10"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:singleLine="true"
-                android:textSize="20sp"
                 android:clickable="false"
                 android:cursorVisible="false"
+                android:ems="10"
                 android:focusable="false"
-                android:focusableInTouchMode="false"/>
+                android:focusableInTouchMode="false"
+                android:inputType="textCapWords|textPersonName"
+                android:singleLine="true"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/edit_name_button"
@@ -88,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/view_item_edit_text"
-                android:textColor="@android:color/holo_blue_dark"
+                android:textColor="@color/colorPrimaryDark"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -131,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/view_item_edit_text"
-                android:textColor="@android:color/holo_blue_dark"
+                android:textColor="@color/colorPrimaryDark"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -145,6 +121,7 @@
         android:layout_weight="1"
         android:text="@string/save_changes"
         android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="16sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"

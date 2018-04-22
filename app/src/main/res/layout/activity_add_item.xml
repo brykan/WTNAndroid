@@ -6,23 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.bryan.whatsteddysname.AddItemActivity">
 
-
-    <TextView
-        android:id="@+id/add_item_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:text="@string/add_item_title"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -36,15 +19,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/add_item_title"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0">
-
 
         <ImageButton
             android:id="@+id/addImg"
             android:layout_width="match_parent"
             android:layout_height="286dp"
             android:layout_weight="1"
+            android:background="?attr/actionModeSplitBackground"
             android:contentDescription="@string/insert_item_image_here"
             app:srcCompat="@android:drawable/ic_menu_camera" />
 
@@ -89,7 +72,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:text="@string/add_item_btn_title"
+        android:textColor="@android:color/background_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

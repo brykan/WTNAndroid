@@ -33,4 +33,7 @@
     <string name="search_bar_text">Search...</string>
     <string name="search_by_camera_text">Search By Camera</string>
     <string name="result_from_search">Result from search:</string>
+    <string name="options">Options</string>
+    <string name="add_item">Add Item</string>
+    <string name="log_out">Sign Out</string>
 </resources>

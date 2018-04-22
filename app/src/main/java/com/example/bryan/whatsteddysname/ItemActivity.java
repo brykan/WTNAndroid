@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
@@ -15,9 +16,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -207,40 +211,6 @@ public class ItemActivity extends AppCompatActivity {
             }
         });
 
-        final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        //Yes button clicked
-                        Intent output = new Intent();
-
-                        output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
-                        setResult(RESULT_DELETE_ITEM, output);
-                        dialog.dismiss();
-                        finish();
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        dialog.dismiss();
-                        break;
-                }
-            }
-        };
-
-        deleteItemBtn = (Button) findViewById(R.id.delete_item_btn);
-        deleteItemBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                builder.setMessage("Are you sure you want to delete?")
-                        .setPositiveButton("Yes", deleteItemListner)
-                        .setNegativeButton("No", deleteItemListner)
-                        .show();
-            }
-        });
-
         try {
             item = new JSONObject(getIntent().getStringExtra("ITEM"));
             String localPhotoPath = item.getString("localPhotoPath");
@@ -264,6 +234,52 @@ public class ItemActivity extends AppCompatActivity {
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.view_item, menu);//Menu Resource, Menu
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if(menuItem.getItemId() == R.id.delete_item) {
+            final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            //Yes button clicked
+                            Intent output = new Intent();
+
+                            output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
+                            setResult(RESULT_DELETE_ITEM, output);
+                            dialog.dismiss();
+                            finish();
+                            break;
+
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            //No button clicked
+                            dialog.dismiss();
+                            break;
+                    }
+                }
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ItemActivity.this);
+            AlertDialog dialog = builder.setMessage("Are you sure you want to delete?")
+                    .setPositiveButton("Yes", deleteItemListner)
+                    .setNegativeButton("No", deleteItemListner)
+                    .create();
+            dialog.show();
+            Button buttonPositive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            buttonPositive.setTextColor(Color.parseColor("#DC143C"));
+
+            return true;
+        }
+        return super.onOptionsItemSelected(menuItem);
     }
 
     public void downloadImage(final JSONObject item, final ImageView itemImg) {
