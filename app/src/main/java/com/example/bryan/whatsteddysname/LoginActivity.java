@@ -11,6 +11,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.auth.core.StartupAuthResult;
+import com.amazonaws.mobile.auth.core.StartupAuthResultHandler;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
@@ -56,10 +59,24 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
 
     @Override
     public void onSignInSuccess() {
-        progressDialog.cancel();
-        Toast.makeText(getBaseContext(), "Logged In", Toast.LENGTH_LONG).show();
-        LoginActivity.this.startActivity(new Intent(LoginActivity.this, CollectionActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+        IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+
+        identityManager.resumeSession(LoginActivity.this, new StartupAuthResultHandler() {
+            @Override
+            public void onComplete(StartupAuthResult authResults) {
+                if (authResults.isUserSignedIn()) {
+                    progressDialog.cancel();
+                    Toast.makeText(getBaseContext(), "Logged In", Toast.LENGTH_LONG).show();
+                    startActivity(new Intent(LoginActivity.this, CollectionActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                    finish();
+                } else {
+                    progressDialog.cancel();
+                    Toast.makeText(getBaseContext(), "Login Failed", Toast.LENGTH_LONG).show();
+                    startActivity(new Intent(LoginActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                    finish();
+                }
+            }
+        }, 0);
     }
 
     @Override

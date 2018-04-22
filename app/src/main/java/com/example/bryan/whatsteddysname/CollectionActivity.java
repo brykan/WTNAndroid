@@ -32,8 +32,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.auth.core.SignInStateChangeListener;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
@@ -195,6 +198,7 @@ public class CollectionActivity extends AppCompatActivity {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
                             //Yes button clicked
+                            signOut();
                             break;
 
                         case DialogInterface.BUTTON_NEGATIVE:
@@ -496,5 +500,13 @@ public class CollectionActivity extends AppCompatActivity {
         } catch(ExecutionException e) {
             Log.d("EXECUTION", e.getMessage());
         }
+    }
+
+    public void signOut() {
+        IdentityManager.getDefaultIdentityManager().signOut();
+
+        Toast.makeText(getBaseContext(), "Logged Out", Toast.LENGTH_LONG).show();
+        startActivity(new Intent(CollectionActivity.this, LoginActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 }
