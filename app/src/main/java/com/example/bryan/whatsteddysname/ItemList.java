@@ -78,6 +78,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
             view.setTag(holder);
         } else {
             holder = (ViewHolder) view.getTag();
+            holder.imageView.setImageBitmap(null);
         }
 
         try {

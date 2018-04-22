@@ -130,7 +130,7 @@ public class CollectionActivity extends AppCompatActivity {
             }
         });
 
-        List<String> items = user.getItems();
+        final List<String> items = user.getItems();
 
         adapter = new ItemList(this, items);
 
@@ -161,14 +161,15 @@ public class CollectionActivity extends AppCompatActivity {
                                         WTNUsersDO.class,
                                         user.getUserId(),
                                         user.getUsername());
-                                List<String> updated = userItem.getItems();
-
+                                final List<String> updated = userItem.getItems();
+                                
                                 if(!user.getItems().equals(updated)) {
                                     user.setItems(updated);
-                                    adapter.notifyDataSetChanged();
                                     runOnUiThread(new Runnable() {
                                         public void run() {
                                             // runs on UI thread
+                                            adapter = new ItemList(CollectionActivity.this, updated);
+                                            itemList.setAdapter(adapter);
                                             swipeLayout.setRefreshing(false);
                                         }
                                     });
