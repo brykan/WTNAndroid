@@ -133,14 +133,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
-
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
-
-                            scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
-
-                            itemImg.setImageBitmap(scaledBitmap);
-
+                            Glide.with(context).load(imgFile).apply(options).into(itemImg);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }
@@ -207,45 +200,5 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
         };
 
         return filter;
-    }
-
-    public Bitmap rotateImageIfRequired(Bitmap img, String currentPhotoPath) {
-        Uri uri = Uri.fromFile(new File(currentPhotoPath));
-        if (uri.getScheme().equals("content")) {
-            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
-            Cursor c = this.context.getContentResolver().query(uri, projection, null, null, null);
-            if (c.moveToFirst()) {
-                final int rotation = c.getInt(0);
-                c.close();
-                return rotateImage(img, rotation);
-            }
-            return img;
-        } else {
-            try {
-                ExifInterface ei = new ExifInterface(uri.getPath());
-                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        return rotateImage(img, 90);
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        return rotateImage(img, 180);
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        return rotateImage(img, 270);
-                    default:
-                        return img;
-                }
-            } catch (IOException e) {
-                Log.d("EXIFERROR", e.getMessage());
-            }
-            return img;
-        }
-    }
-
-    public Bitmap rotateImage(Bitmap img, int degree) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degree);
-        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        return rotatedImg;
     }
 }

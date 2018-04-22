@@ -19,6 +19,9 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -72,11 +75,14 @@ public class AddItemActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             try {
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + currentPhotoPath));
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(imageBitmap, imageBitmap.getWidth() / 4, imageBitmap.getHeight() / 4, false);
-                scaledBitmap = rotateImageIfRequired(scaledBitmap);
+                imageBitmap = rotateImageIfRequired(imageBitmap);
 
-                addImgBtn.setImageBitmap(scaledBitmap);
+                RequestOptions options = new RequestOptions()
+                        .placeholder(R.drawable.placeholder)
+                        .override(imageBitmap.getWidth() / 3, imageBitmap.getHeight()/ 3)
+                        .centerCrop();
                 addImgBtn.setBackgroundResource(0);
+                Glide.with(this).load(imageBitmap).apply(options).into(addImgBtn);
             } catch(IOException e) {
                 e.printStackTrace();
             }

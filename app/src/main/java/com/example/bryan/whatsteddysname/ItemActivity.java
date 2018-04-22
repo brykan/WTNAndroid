@@ -37,6 +37,8 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +50,6 @@ public class ItemActivity extends AppCompatActivity {
     static final int RESULT_DELETE_ITEM = 4;
     static final int RESULT_UPDATE_ITEM = 5;
     private JSONObject item;
-    private Button deleteItemBtn;
     private Button editNameBtn;
     private Button editDesBtn;
     private Button saveChangesBtn;
@@ -222,14 +223,14 @@ public class ItemActivity extends AppCompatActivity {
 
             if(imgFile.exists()) {
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 3, bitmap.getHeight() / 3, false);
-                scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
-
-                BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
-
-                imgField.setImageBitmap(scaledBitmap);
+                bitmap = rotateImageIfRequired(bitmap, localPhotoPath);
+                RequestOptions options = new RequestOptions()
+                        .placeholder(R.drawable.placeholder)
+                        .override(bitmap.getWidth() / 3, bitmap.getHeight()/ 3)
+                        .centerCrop();
+                Glide.with(this).load(bitmap).apply(options).into(imgField);
             } else {
-                downloadImage(item, imgField);
+                downloadImage(this, item, imgField);
             }
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
@@ -282,16 +283,16 @@ public class ItemActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(menuItem);
     }
 
-    public void downloadImage(final JSONObject item, final ImageView itemImg) {
-        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+    public void downloadImage(final Context context, final JSONObject item, final ImageView itemImg) {
+        AWSMobileClient.getInstance().initialize(context, new AWSStartupHandler() {
             @Override
             public void onComplete(AWSStartupResult awsStartupResult) {
-                downloadWithTransferUtility(item, itemImg);
+                downloadWithTransferUtility(context, item, itemImg);
             }
         }).execute();
     }
 
-    public void downloadWithTransferUtility(final JSONObject item, final ImageView itemImg) {
+    public void downloadWithTransferUtility(final Context context, final JSONObject item, final ImageView itemImg) {
 
         TransferUtility transferUtility =
                 TransferUtility.builder()
@@ -310,18 +311,17 @@ public class ItemActivity extends AppCompatActivity {
                 @Override
                 public void onStateChanged(int id, TransferState state) {
                     if (TransferState.COMPLETED == state) {
-                        // Handle a completed upload.
+                        // Handle a completed download.
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
                             Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
 
-                            scaledBitmap = rotateImageIfRequired(scaledBitmap, localPhotoPath);
-
-                            BitmapDrawable obj = new BitmapDrawable(getResources(), scaledBitmap);
-
-                            itemImg.setBackground(obj);
+                            RequestOptions options = new RequestOptions()
+                                    .placeholder(R.drawable.placeholder)
+                                    .override(bitmap.getWidth() / 3, bitmap.getHeight()/ 3)
+                                    .centerCrop();
+                            Glide.with(context).load(bitmap).apply(options).into(imgField);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }
