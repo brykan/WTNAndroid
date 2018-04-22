@@ -1,30 +1,40 @@
 package com.example.bryan.whatsteddysname;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.auth.AWSCognitoIdentityProvider;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.core.StartupAuthResult;
 import com.amazonaws.mobile.auth.core.StartupAuthResultHandler;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ForgotPasswordContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.ForgotPasswordHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 public class LoginActivity extends AppCompatActivity implements AWSLoginHandler {
-    private DynamoDBMapper dynamoDBMapper;
-    private TextView linkToLogin;
+    private TextView linktoForgotPassword;
     private Button loginBtn;
     private TextInputEditText userNameEntered;
     private TextInputEditText passwordEntered;
+    private EditText usernameInput;
     private ProgressDialog progressDialog;
+    private AlertDialog forgotPasswordPrompt;
     private AWSLoginModel awsLoginModel;
 
     @Override
@@ -43,19 +53,42 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
             }
         });
 
+        View forgotPrompt = getPromptView(R.layout.forgot_prompt);
+        usernameInput = (EditText) forgotPrompt.findViewById(R.id.forgot_edittext);
+        forgotPasswordPrompt = createPrompt(forgotPrompt, "Enter",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // do confirmation and handles on interface
+                        String username = usernameInput.getText().toString();
+                        if (username.isEmpty() || username.length() <= 3 || !(username.matches("[a-zA-Z].*"))) {
+                            usernameInput.setError("Must be at least 4 characters and start with a letter.");
+                        } else {
+                            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+                            intent.putExtra("username", username);
+
+                            Toast.makeText(getBaseContext(), "Confirmation code sent.", Toast.LENGTH_LONG).show();
+                            startActivity(intent);
+                        }
+                    }
+                });;
+
+        linktoForgotPassword = (TextView) findViewById(R.id.forgot_password);
+        linktoForgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                forgotPasswordPrompt.show();
+            }
+        });
+
         userNameEntered = (TextInputEditText) findViewById(R.id.login_username);
         passwordEntered = (TextInputEditText) findViewById(R.id.login_password);
     }
 
     @Override
-    public void onRegisterSuccess() {
-       // Not implemented here
-    }
+    public void onRegisterSuccess() { /* Not implemented here */ }
 
     @Override
-    public void onRegisterConfirmed() {
-        // Not implemented here
-    }
+    public void onRegisterConfirmed() { /* Not implemented here */ }
 
     @Override
     public void onSignInSuccess() {
@@ -72,8 +105,6 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
                 } else {
                     progressDialog.cancel();
                     Toast.makeText(getBaseContext(), "Login Failed", Toast.LENGTH_LONG).show();
-                    startActivity(new Intent(LoginActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                    finish();
                 }
             }
         }, 0);
@@ -138,5 +169,23 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
         }
 
         return valid;
+    }
+
+    public View getPromptView(int promptId) {
+        LayoutInflater li = LayoutInflater.from(this);
+        return li.inflate(promptId, null);
+    }
+
+    public AlertDialog createPrompt(
+            View promptsView,
+            String positiveText,
+            DialogInterface.OnClickListener listener) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+        alertDialogBuilder.setView(promptsView);
+
+        // set dialog message
+        alertDialogBuilder.setPositiveButton(positiveText, listener);
+
+        return alertDialogBuilder.create();
     }
 }

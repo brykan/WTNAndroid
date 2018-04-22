@@ -21,7 +21,7 @@
             android:id="@+id/view_item_img"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:contentDescription="@string/item_image_content_des"
+            android:contentDescription="@string/item_image_des"
             app:srcCompat="@android:color/transparent"
             tools:layout_editor_absoluteX="150dp"
             tools:layout_editor_absoluteY="113dp" />

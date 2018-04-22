@@ -508,5 +508,6 @@ public class CollectionActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), "Logged Out", Toast.LENGTH_LONG).show();
         startActivity(new Intent(CollectionActivity.this, LoginActivity.class)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+        finish();
     }
 }

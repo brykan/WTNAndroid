@@ -36,7 +36,8 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".SplashActivity"
+        <activity
+            android:name=".SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,21 +45,30 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".SignupActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".CollectionActivity"
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SignupActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".CollectionActivity"
             android:label="My Collection"
-            android:windowSoftInputMode="adjustPan"/>
-        <activity android:name=".AddItemActivity"
-            android:label="@string/add_item"/>
-        <activity android:name=".ItemActivity"
-            android:label="View Item"/>
-        <activity android:name=".SearchResultsActivity"
-            android:label="Search results"></activity>
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".AddItemActivity"
+            android:label="@string/add_item" />
+        <activity
+            android:name=".ItemActivity"
+            android:label="View Item" />
+        <activity
+            android:name=".SearchResultsActivity"
+            android:label="Search results" />
+        <activity android:name=".ForgotPasswordActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
