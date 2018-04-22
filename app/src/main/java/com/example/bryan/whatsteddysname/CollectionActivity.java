@@ -1,42 +1,33 @@
 package com.example.bryan.whatsteddysname;
 
-import android.app.ActionBar;
 import android.app.ProgressDialog;
-import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobile.auth.core.IdentityManager;
-import com.amazonaws.mobile.auth.core.SignInStateChangeListener;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
@@ -46,9 +37,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
@@ -58,12 +47,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static com.example.bryan.whatsteddysname.AddItemActivity.REQUEST_IMAGE_CAPTURE;
@@ -88,16 +73,9 @@ public class CollectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_collection);
 
-        // Initialize the Amazon Cognito credentials provider
-        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
-                this,
-                "us-east-1:0aba8b06-2682-4d64-8131-86352213cb4a", // Identity pool ID
-                Regions.US_EAST_1 // Region
-        );
-
         // Instantiate a AmazonDynamoDBMapperClient
         try {
-            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
             this.dynamoDBMapper = DynamoDBMapper.builder()
                     .dynamoDBClient(dynamoDBClient)
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
@@ -176,7 +154,33 @@ public class CollectionActivity extends AppCompatActivity {
                 new SwipeRefreshLayout.OnRefreshListener() {
                     @Override
                     public void onRefresh() {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                WTNUsersDO userItem = dynamoDBMapper.load(
+                                        WTNUsersDO.class,
+                                        user.getUserId(),
+                                        user.getUsername());
+                                List<String> updated = userItem.getItems();
 
+                                if(!user.getItems().equals(updated)) {
+                                    user.setItems(updated);
+                                    adapter.notifyDataSetChanged();
+                                    runOnUiThread(new Runnable() {
+                                        public void run() {
+                                            // runs on UI thread
+                                            swipeLayout.setRefreshing(false);
+                                        }
+                                    });
+                                }
+                                runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        // runs on UI thread
+                                        swipeLayout.setRefreshing(false);
+                                    }
+                                });
+                            }
+                        }).start();
                     }
                 }
         );
@@ -185,7 +189,7 @@ public class CollectionActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.collection, menu);//Menu Resource, Menu
+        getMenuInflater().inflate(R.menu.collection, menu); //Menu Resource
         return true;
     }
 
@@ -349,9 +353,7 @@ public class CollectionActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
+    protected void onResume() { super.onResume(); }
 
     public void updateUser(final WTNUsersDO user) {
         new Thread(new Runnable() {
