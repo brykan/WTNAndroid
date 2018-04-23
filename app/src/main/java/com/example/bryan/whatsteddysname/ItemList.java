@@ -1,14 +1,6 @@
 package com.example.bryan.whatsteddysname;
 
 import android.app.Activity;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.ExifInterface;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,6 +125,7 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
+
                             Glide.with(context).load(imgFile).apply(options).into(itemImg);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());

@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
@@ -17,11 +16,9 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
@@ -29,7 +26,6 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 
 import org.json.JSONException;
@@ -38,6 +34,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -175,18 +172,19 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
             File input = new File(item.getString("localPhotoPath"));
 
             if(input.exists()) {
-                Bitmap src = BitmapFactory.decodeFile(input.getPath());
+                WeakReference<Bitmap> src = new WeakReference<Bitmap>(BitmapFactory.decodeFile(input.getPath()));
                 src = rotateImageIfRequired(src);
-                Bitmap out = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
+                WeakReference<Bitmap> out =
+                        new WeakReference<Bitmap>(Bitmap.createBitmap(src.get().getWidth(), src.get().getHeight(), src.get().getConfig()));
 
-                Canvas canvas = new Canvas(out);
+                Canvas canvas = new Canvas(out.get());
                 Paint paint = new Paint();
                 ColorMatrix colorMatrix = new ColorMatrix();
 
                 colorMatrix.setSaturation(0); //value of 0 maps the color to gray-scale
                 ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
                 paint.setColorFilter(filter);
-                canvas.drawBitmap(src, 0, 0, paint);
+                canvas.drawBitmap(src.get(), 0, 0, paint);
 
                 File outFile = null;
                 try {
@@ -194,7 +192,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
 
                     if(outFile != null) {
                         FileOutputStream outStream = new FileOutputStream(outFile);
-                        out.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                        out.get().compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                         outStream.flush();
                         outStream.close();
                     }
@@ -221,7 +219,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
         return image;
     }
 
-    public Bitmap rotateImageIfRequired(Bitmap img) {
+    public WeakReference<Bitmap> rotateImageIfRequired(WeakReference<Bitmap> img) {
         Uri uri = Uri.fromFile(new File(photoPath));
         if (uri.getScheme().equals("content")) {
             String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
@@ -254,10 +252,9 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    public Bitmap rotateImage(Bitmap img, int degree) {
+    public WeakReference<Bitmap> rotateImage(WeakReference<Bitmap> img, int degree) {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
-        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        return rotatedImg;
+        return new WeakReference<Bitmap>(Bitmap.createBitmap(img.get(), 0, 0, img.get().getWidth(), img.get().getHeight(), matrix, true));
     }
 }

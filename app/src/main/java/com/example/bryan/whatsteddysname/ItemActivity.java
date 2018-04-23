@@ -3,20 +3,12 @@ package com.example.bryan.whatsteddysname;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.ExifInterface;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -44,7 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ItemActivity extends AppCompatActivity {
     static final int RESULT_DELETE_ITEM = 4;
@@ -312,10 +303,10 @@ public class ItemActivity extends AppCompatActivity {
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
-
                             RequestOptions options = new RequestOptions()
                                     .placeholder(R.drawable.placeholder)
                                     .centerInside();
+
                             Glide.with(context).load(imgFile).apply(options).into(imgField);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
