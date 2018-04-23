@@ -38,10 +38,12 @@ public class MainActivity extends AppCompatActivity {
             case "Login":
                 intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
+                finish();
                 break;
             case "Signup":
                 intent = new Intent(this, SignupActivity.class);
                 startActivity(intent);
+                finish();
                 break;
         }
     }

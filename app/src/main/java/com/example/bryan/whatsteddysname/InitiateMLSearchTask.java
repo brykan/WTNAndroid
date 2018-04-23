@@ -170,8 +170,7 @@ public class InitiateMLSearchTask extends AsyncTask<Void, Void, String> {
     }
 
     public void uploadWithTransferUtility(final String actualSearchPhotoPath) {
-        final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileLocation = "public/search-images/" + timeStamp + ".jpg";
+        String fileLocation = "public/search-images/" + userId + ".jpg";
 
         TransferUtility transferUtility =
                 TransferUtility.builder()
@@ -193,7 +192,7 @@ public class InitiateMLSearchTask extends AsyncTask<Void, Void, String> {
                     File photo = new File(actualSearchPhotoPath);
 
                     if(photo.delete()) {
-                        beginSearch(timeStamp);
+                        beginSearch();
                     }
                 }
             }
@@ -214,9 +213,9 @@ public class InitiateMLSearchTask extends AsyncTask<Void, Void, String> {
         });
     }
 
-    public void beginSearch(String fileName) {
+    public void beginSearch() {
         String mlUrl = "https://mv33lyux8f.execute-api.us-east-1.amazonaws.com/prod/classify?user="
-                + userId + "&search=" + fileName;
+                + userId;
         new HttpGetRequest(context, packageContext, progressDialog, itemList).execute(mlUrl);
     }
 }
