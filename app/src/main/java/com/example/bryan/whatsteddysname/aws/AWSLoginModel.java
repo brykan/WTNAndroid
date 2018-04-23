@@ -285,4 +285,8 @@ public class AWSLoginModel {
         SharedPreferences savedValues = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
         return savedValues.getString(USER_ID, "");
     }
+
+    public CognitoUserPool getmCognitoUserPool(Context context) {
+        return this.mCognitoUserPool;
+    }
 }

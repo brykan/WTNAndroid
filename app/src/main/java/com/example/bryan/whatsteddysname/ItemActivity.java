@@ -3,9 +3,8 @@ package com.example.bryan.whatsteddysname;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
+
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +12,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -28,6 +29,8 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +41,6 @@ public class ItemActivity extends AppCompatActivity {
     static final int RESULT_DELETE_ITEM = 4;
     static final int RESULT_UPDATE_ITEM = 5;
     private JSONObject item;
-    private Button deleteItemBtn;
     private Button editNameBtn;
     private Button editDesBtn;
     private Button saveChangesBtn;
@@ -201,71 +203,84 @@ public class ItemActivity extends AppCompatActivity {
             }
         });
 
-        final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        //Yes button clicked
-                        Intent output = new Intent();
-
-                        output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
-                        setResult(RESULT_DELETE_ITEM, output);
-                        dialog.dismiss();
-                        finish();
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        dialog.dismiss();
-                        break;
-                }
-            }
-        };
-
-        deleteItemBtn = (Button) findViewById(R.id.delete_item_btn);
-        deleteItemBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                builder.setMessage("Are you sure you want to delete?")
-                        .setPositiveButton("Yes", deleteItemListner)
-                        .setNegativeButton("No", deleteItemListner)
-                        .show();
-            }
-        });
-
         try {
             item = new JSONObject(getIntent().getStringExtra("ITEM"));
+            String localPhotoPath = item.getString("localPhotoPath");
 
             nameField.setText(item.getString("itemName"), TextView.BufferType.EDITABLE);
             desField.setText(item.getString("itemDescription"), TextView.BufferType.EDITABLE);
 
-            File imgFile = new File(item.getString("localPhotoPath"));
+            File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
-
-                imgField.setBackground(obj);
+                RequestOptions options = new RequestOptions()
+                        .placeholder(R.drawable.placeholder)
+                        .centerInside();
+                Glide.with(this).load(imgFile).apply(options).into(imgField);
             } else {
-                downloadImage(item, imgField);
+                downloadImage(this, item, imgField);
             }
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
     }
 
-    public void downloadImage(final JSONObject item, final ImageView itemImg) {
-        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.view_item, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if(menuItem.getItemId() == R.id.delete_item) {
+            final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            //Yes button clicked
+                            Intent output = new Intent();
+
+                            output.putExtra("itemIndex", getIntent().getIntExtra("ITEMINDEX", -1));
+                            setResult(RESULT_DELETE_ITEM, output);
+                            dialog.dismiss();
+                            finish();
+                            break;
+
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            //No button clicked
+                            dialog.dismiss();
+                            break;
+                    }
+                }
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ItemActivity.this);
+            AlertDialog dialog = builder.setMessage("Are you sure you want to delete?")
+                    .setPositiveButton("Yes", deleteItemListner)
+                    .setNegativeButton("No", deleteItemListner)
+                    .create();
+            dialog.show();
+            Button buttonPositive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            buttonPositive.setTextColor(Color.parseColor("#DC143C"));
+
+            return true;
+        }
+        return super.onOptionsItemSelected(menuItem);
+    }
+
+    public void downloadImage(final Context context, final JSONObject item, final ImageView itemImg) {
+        AWSMobileClient.getInstance().initialize(context, new AWSStartupHandler() {
             @Override
             public void onComplete(AWSStartupResult awsStartupResult) {
-                downloadWithTransferUtility(item, itemImg);
+                downloadWithTransferUtility(context, item, itemImg);
             }
         }).execute();
     }
 
-    public void downloadWithTransferUtility(final JSONObject item, final ImageView itemImg) {
+    public void downloadWithTransferUtility(final Context context, final JSONObject item, final ImageView itemImg) {
 
         TransferUtility transferUtility =
                 TransferUtility.builder()
@@ -284,13 +299,15 @@ public class ItemActivity extends AppCompatActivity {
                 @Override
                 public void onStateChanged(int id, TransferState state) {
                     if (TransferState.COMPLETED == state) {
-                        // Handle a completed upload.
+                        // Handle a completed download.
                         try {
-                            File imgFile = new File(item.getString("localPhotoPath"));
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                            BitmapDrawable obj = new BitmapDrawable(getResources(), bitmap);
+                            String localPhotoPath = item.getString("localPhotoPath");
+                            File imgFile = new File(localPhotoPath);
+                            RequestOptions options = new RequestOptions()
+                                    .placeholder(R.drawable.placeholder)
+                                    .centerInside();
 
-                            itemImg.setBackground(obj);
+                            Glide.with(context).load(imgFile).apply(options).into(imgField);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }

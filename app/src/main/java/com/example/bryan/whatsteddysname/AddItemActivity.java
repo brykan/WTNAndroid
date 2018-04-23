@@ -1,10 +1,6 @@
 package com.example.bryan.whatsteddysname;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -18,22 +14,16 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobile.client.AWSStartupHandler;
-import com.amazonaws.mobile.client.AWSStartupResult;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.amazonaws.mobileconnectors.s3.transferutility.*;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 
 public class AddItemActivity extends AppCompatActivity {
@@ -44,7 +34,6 @@ public class AddItemActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentPhotoPath;
     private JSONObject item;
-    private ProgressDialog progressDialog;
     private String itemTimeStamp;
 
     @Override
@@ -70,23 +59,20 @@ public class AddItemActivity extends AppCompatActivity {
 
         addItemName = (TextInputEditText) findViewById(R.id.add_item_name);
         addItemDes = (TextInputEditText) findViewById(R.id.add_item_des);
-        Drawable draw = addItemBtn.getBackground();
-        Log.d("LOLOOL", draw.toString());
+
         item = new JSONObject();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            try {
-                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + currentPhotoPath));
-                BitmapDrawable obj = new BitmapDrawable(getResources(), imageBitmap);
-                addImgBtn.setBackground(obj);
-                addImgBtn.setImageResource(android.R.color.transparent);
-            } catch(IOException e) {
-                e.printStackTrace();
-            }
+                File imgFile = new File(currentPhotoPath);
+                RequestOptions options = new RequestOptions()
+                        .placeholder(R.drawable.placeholder)
+                        .centerInside();
+
+                addImgBtn.setBackgroundResource(0);
+                Glide.with(this).load(imgFile).apply(options).into(addImgBtn);
         }
     }
 
@@ -133,22 +119,6 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     private void addItem() {
-        progressDialog = new ProgressDialog(AddItemActivity.this,
-                R.style.Theme_AppCompat_DayNight_Dialog);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setCancelable(false);
-        progressDialog.setMessage("Adding Item...");
-        progressDialog.show();
-
-        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
-           @Override
-            public void onComplete(AWSStartupResult awsStartupResult) {
-               uploadWithTransferUtility();
-           }
-        }).execute();
-    }
-
-    public void uploadWithTransferUtility() {
         String itemName = addItemName.getText().toString();
         String itemDes = addItemDes.getText().toString();
         Boolean valid = true;
@@ -165,58 +135,20 @@ public class AddItemActivity extends AppCompatActivity {
         }
 
         if(!valid) {
-            progressDialog.cancel();
             return;
         }
 
-        String fileLocation = "public/" + getIntent().getStringExtra("USER_ID") + "/" + itemTimeStamp + ".jpg";
+        AddItemRequest request =
+                new AddItemRequest(
+                        AddItemActivity.this,
+                        item,
+                        itemName,
+                        itemDes,
+                        getIntent().getStringExtra("USER_ID"),
+                        itemTimeStamp,
+                        currentPhotoPath,
+                        getApplicationContext());
 
-        try {
-            item.put("s3Location", fileLocation);
-            item.put("itemName", itemName);
-            item.put("itemDescription", itemDes);
-        } catch (JSONException e) {
-            Log.d("JSONEXCEPTION", e.getMessage());
-        }
-
-        TransferUtility transferUtility =
-                TransferUtility.builder()
-                    .context(getApplicationContext())
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
-                    .build();
-
-        TransferObserver uploadObserver =
-                transferUtility.upload(
-                        fileLocation,
-                        new File(currentPhotoPath));
-
-        uploadObserver.setTransferListener(new TransferListener() {
-            @Override
-            public void onStateChanged(int id, TransferState state) {
-                if (TransferState.COMPLETED == state) {
-                    // Handle complete upload
-                    progressDialog.cancel();
-                    Intent output = new Intent();
-
-                    output.putExtra("itemResult", item.toString());
-                    setResult(RESULT_OK, output);
-                    finish();
-                }
-            }
-
-            @Override
-            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
-                int percentDone = (int) percentDonef;
-
-                Log.d("UPLOADINGTOS3", "bytesCurrent: " + bytesCurrent + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
-            }
-
-            @Override
-            public void onError(int id, Exception ex) {
-                Log.d("UPLOADERROR", ex.getMessage());
-            }
-        });
+        request.execute();
     }
 }

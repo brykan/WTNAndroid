@@ -1,16 +1,13 @@
 package com.example.bryan.whatsteddysname;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,51 +19,78 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ItemList extends ArrayAdapter<String> {
+public class ItemList extends ArrayAdapter<String> implements Filterable {
     private final Activity context;
-    private final List<String> items;
+    private List<String> items;
+    private List<String> filteredList;
+    private RequestOptions options;
+
+    private static class ViewHolder {
+        public TextView textView;
+        public ImageView imageView;
+    }
 
     public ItemList(Activity context, List<String> items) {
         super(context, R.layout.single_item, items);
         this.context = context;
         this.items = items;
+        this.filteredList = items;
+        options = new RequestOptions()
+                .placeholder(R.drawable.placeholder)
+                .override(50, 50)
+                .centerCrop();
+    }
+
+    @Override
+    public int getCount() {
+        return filteredList.size();
     }
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        View rowView = inflater.inflate(R.layout.single_item, null, true);
-        TextView itemName = (TextView) rowView.findViewById(R.id.item_name);
-        final ImageView itemImg = (ImageView) rowView.findViewById(R.id.item_img);
+        ViewHolder holder = null;
+        if(view == null) {
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            holder = new ViewHolder();
+
+            view = inflater.inflate(R.layout.single_item, parent, false);
+            holder.textView = (TextView) view.findViewById(R.id.item_name);
+            holder.imageView = (ImageView) view.findViewById(R.id.item_img);
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
+            holder.imageView.setImageBitmap(null);
+        }
 
         try {
-            final JSONObject item = new JSONObject(items.get(position));
+            final JSONObject item = new JSONObject(filteredList.get(position));
             String name = item.getString("itemName");
+            String localPhotoPath = item.getString("localPhotoPath");
 
-            itemName.setText(name);
+            holder.textView.setText(name);
 
-           File imgFile = new File(item.getString("localPhotoPath"));
+            File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
-
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-                itemImg.setImageBitmap(bitmap);
+                Glide.with(context).load(imgFile).apply(options).into(holder.imageView);
             } else {
-                downloadImage(item, itemImg);
+                downloadImage(item, holder.imageView);
             }
         } catch(JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
 
-        return rowView;
+        return view;
     }
 
     public void downloadImage(final JSONObject item, final ImageView itemImg) {
@@ -99,12 +123,10 @@ public class ItemList extends ArrayAdapter<String> {
                     if (TransferState.COMPLETED == state) {
                         // Handle a completed upload.
                         try {
-                            File imgFile = new File(item.getString("localPhotoPath"));
+                            String localPhotoPath = item.getString("localPhotoPath");
+                            File imgFile = new File(localPhotoPath);
 
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-                            itemImg.setImageBitmap(bitmap);
-
+                            Glide.with(context).load(imgFile).apply(options).into(itemImg);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }
@@ -130,4 +152,46 @@ public class ItemList extends ArrayAdapter<String> {
         }
     }
 
+    @Override
+    public Filter getFilter() {
+        final Filter filter = new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                FilterResults results = new FilterResults();
+                List<String> filteredItems = new ArrayList<>();
+
+                if(charSequence == null || charSequence.length() == 0) {
+                    results.count = items.size();
+                    results.values = items;
+                } else {
+                    charSequence = charSequence.toString().toLowerCase();
+
+                    for (int i = 0; i < items.size(); i++) {
+                        try {
+                            final JSONObject item = new JSONObject(items.get(i));
+                            String name = item.getString("itemName");
+
+                            if(name.toLowerCase().contains(charSequence)) {
+                                filteredItems.add(items.get(i));
+                            }
+                        } catch(JSONException e) {
+                            Log.d("JSONEXCEPTION", e.getMessage());
+                        }
+                    }
+
+                    results.count = filteredItems.size();
+                    results.values = filteredItems;
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredList = (List<String>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+
+        return filter;
+    }
 }
