@@ -1,13 +1,22 @@
 package com.example.bryan.whatsteddysname;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by john_le on 4/20/18.
@@ -15,7 +24,20 @@ import java.net.URL;
 
 public class HttpGetRequest extends AsyncTask<String, Void, String> {
     public static final String REQUEST_METHOD = "GET";
+    private Context context;
+    private Context packageContext;
+    private List<String> items;
+    private ProgressDialog progressDialog;
 
+    public HttpGetRequest(Context context,
+                          Context packageContext,
+                          ProgressDialog progressDialog,
+                          List<String> items) {
+        this.context = context;
+        this.packageContext = packageContext;
+        this.items = items;
+        this.progressDialog = progressDialog;
+    }
     @Override
     protected String doInBackground(String... params){
         String stringUrl = params[0];
@@ -62,7 +84,33 @@ public class HttpGetRequest extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected void onPostExecute(String result){
+    protected void onPostExecute(final String result){
         super.onPostExecute(result);
+        if(result != null && result != "{\"message\": \"Endpoint request timed out\"}")  {
+            List<String> resultList = new ArrayList<String>();
+
+            for(String json : items) {
+                try {
+                    JSONObject obj = new JSONObject(json);
+                    if(obj.getString("s3Location") == result) {
+                        resultList.add(json);
+                    }
+                } catch(JSONException j) {
+                    Log.d("JSONEXCEPTION", j.getMessage());
+                }
+            }
+
+            progressDialog.cancel();
+
+            Intent intent = new Intent(packageContext, SearchResultsActivity.class);
+
+            intent.putStringArrayListExtra("results", (ArrayList<String>) resultList);
+
+            context.startActivity(intent);
+        } else {
+            progressDialog.cancel();
+            Toast.makeText(context, "Search Failed", Toast.LENGTH_LONG).show();
+        }
+
     }
 }

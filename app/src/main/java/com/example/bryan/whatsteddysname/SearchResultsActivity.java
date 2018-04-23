@@ -3,6 +3,7 @@ package com.example.bryan.whatsteddysname;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -29,7 +30,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         results = (List<String>) intent.getStringArrayListExtra("results");
-
+        Log.d("Result:", results.toString());
         ItemList adapter = new ItemList(this, results);
         resultsList.setAdapter(adapter);
 

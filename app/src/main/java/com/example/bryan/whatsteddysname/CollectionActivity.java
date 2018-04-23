@@ -3,8 +3,6 @@ package com.example.bryan.whatsteddysname;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
@@ -29,27 +27,14 @@ import android.widget.Toast;
 
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobile.client.AWSStartupHandler;
-import com.amazonaws.mobile.client.AWSStartupResult;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static com.example.bryan.whatsteddysname.AddItemActivity.REQUEST_IMAGE_CAPTURE;
 
@@ -64,7 +49,6 @@ public class CollectionActivity extends AppCompatActivity {
     private EditText searchBar;
     private Button cameraSearch;
     private String preSearchPhotoPath;
-    private String actualSearchPhotoPath;
     private ProgressDialog searchDialog;
     private SwipeRefreshLayout swipeLayout;
 
@@ -263,19 +247,6 @@ public class CollectionActivity extends AppCompatActivity {
         return image;
     }
 
-    private File createSearchImage() throws IOException {
-        // Create image file name
-        String imageFileName = user.getUserId() + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,
-                ".jpg",
-                storageDir);
-        actualSearchPhotoPath = image.getAbsolutePath();
-
-        return image;
-    }
-
     public Thread getUser() {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -342,14 +313,14 @@ public class CollectionActivity extends AppCompatActivity {
             searchDialog.setMessage("Searching...");
             searchDialog.show();
 
-            createGrayScale();
-
-            AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
-                @Override
-                public void onComplete(AWSStartupResult awsStartupResult) {
-                    uploadWithTransferUtility();
-                }
-            }).execute();
+            new InitiateMLSearchTask(
+                    this,
+                    getApplicationContext(),
+                    CollectionActivity.this,
+                    searchDialog,
+                    preSearchPhotoPath,
+                    user.getUserId(),
+                    user.getItems()).execute();
         }
     }
 
@@ -364,145 +335,6 @@ public class CollectionActivity extends AppCompatActivity {
                 // Item updated
             }
         }).start();
-    }
-
-    public void createGrayScale() {
-        // constant factors
-        final double GS_RED = 0.299;
-        final double GS_GREEN = 0.587;
-        final double GS_BLUE = 0.114;
-        // pixel information
-        int A, R, G, B;
-        int pixel;
-
-        File input = new File(preSearchPhotoPath);
-
-        if(input.exists()) {
-            Bitmap src = BitmapFactory.decodeFile(input.getPath());
-            Bitmap out = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
-            // get image size
-            int width = src.getWidth();
-            int height = src.getHeight();
-
-            // scan through every single pixel
-            for(int x = 0; x < width; ++x) {
-                for(int y = 0; y < height; ++y) {
-                    // get one pixel color
-                    pixel = src.getPixel(x, y);
-                    // retrieve color of all channels
-                    A = Color.alpha(pixel);
-                    R = Color.red(pixel);
-                    G = Color.green(pixel);
-                    B = Color.blue(pixel);
-                    // take conversion up to one single value
-                    R = G = B = (int)(GS_RED * R + GS_GREEN * G + GS_BLUE * B);
-                    // set new pixel color to output bitmap
-                    out.setPixel(x, y, Color.argb(A, R, G, B));
-                }
-            }
-
-            File outFile = null;
-            try {
-                outFile = createSearchImage();
-
-                if(outFile != null) {
-                    FileOutputStream outStream = new FileOutputStream(outFile);
-                    out.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-                    outStream.flush();
-                    outStream.close();
-
-                    if(input.delete()) {
-                        return;
-                    }
-                }
-            } catch (IOException e) {
-                Log.d("IOEXCEPTION", e.getMessage());
-            }
-        }
-    }
-
-    public void uploadWithTransferUtility() {
-        String fileLocation = "public/search-images/" + user.getUserId() + ".jpg";
-
-        TransferUtility transferUtility =
-                TransferUtility.builder()
-                        .context(getApplicationContext())
-                        .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                        .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
-                        .build();
-
-        TransferObserver uploadObserver =
-                transferUtility.upload(
-                        fileLocation,
-                        new File(actualSearchPhotoPath));
-
-        uploadObserver.setTransferListener(new TransferListener() {
-            @Override
-            public void onStateChanged(int id, TransferState state) {
-                if (TransferState.COMPLETED == state) {
-                    // Handle complete upload
-                    File photo = new File(actualSearchPhotoPath);
-
-                    if(photo.delete()) {
-                        beginSearch();
-                    }
-                }
-            }
-
-            @Override
-            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
-                int percentDone = (int) percentDonef;
-
-                Log.d("UPLOADINGTOS3", "bytesCurrent: " + bytesCurrent +
-                        " bytesTotal: " + bytesTotal + " " + percentDone + "%");
-            }
-
-            @Override
-            public void onError(int id, Exception ex) {
-                Log.d("UPLOADERROR", ex.getMessage());
-            }
-        });
-    }
-
-    public void beginSearch() {
-        String mlUrl = "https://mv33lyux8f.execute-api.us-east-1.amazonaws.com/prod/classify?user=example-user";
-                //+ user.getUserId();
-        String result;
-        ArrayList<String> resultList = new ArrayList<String>();
-
-        HttpGetRequest getRequest = new HttpGetRequest();
-
-        try {
-            result = getRequest.execute(mlUrl).get();
-
-            if(result != null) {
-                List<String> items = user.getItems();
-                for(int i = 0; i < items.size(); i++) {
-                    try {
-                        JSONObject item = new JSONObject(items.get(i));
-
-                        if(item.getString("s3Location") == result) {
-                            resultList.add(items.get(i));
-                        }
-                    } catch(JSONException e) {
-                        Log.d("JSONEXCEPTION", e.getMessage());
-                    }
-                }
-
-                searchDialog.cancel();
-
-                Intent intent = new Intent(CollectionActivity.this, SearchResultsActivity.class);
-
-                intent.putStringArrayListExtra("results", (ArrayList<String>) resultList);
-
-                startActivity(intent);
-            }
-        } catch(InterruptedException i) {
-            Log.d("INTERRUPTED", i.getMessage());
-        } catch(ExecutionException e) {
-            Log.d("EXECUTION", e.getMessage());
-        }
     }
 
     public void signOut() {
