@@ -162,7 +162,7 @@ public class CollectionActivity extends AppCompatActivity {
                                         user.getUserId(),
                                         user.getUsername());
                                 final List<String> updated = userItem.getItems();
-                                
+
                                 if(!user.getItems().equals(updated)) {
                                     user.setItems(updated);
                                     runOnUiThread(new Runnable() {
