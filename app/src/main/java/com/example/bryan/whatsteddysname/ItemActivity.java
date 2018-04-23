@@ -222,13 +222,10 @@ public class ItemActivity extends AppCompatActivity {
             File imgFile = new File(localPhotoPath);
 
             if(imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
-                bitmap = rotateImageIfRequired(bitmap, localPhotoPath);
                 RequestOptions options = new RequestOptions()
                         .placeholder(R.drawable.placeholder)
-                        .override(bitmap.getWidth() / 3, bitmap.getHeight()/ 3)
-                        .centerCrop();
-                Glide.with(this).load(bitmap).apply(options).into(imgField);
+                        .centerInside();
+                Glide.with(this).load(imgFile).apply(options).into(imgField);
             } else {
                 downloadImage(this, item, imgField);
             }
@@ -240,7 +237,7 @@ public class ItemActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.view_item, menu);//Menu Resource, Menu
+        getMenuInflater().inflate(R.menu.view_item, menu);
         return true;
     }
 
@@ -315,13 +312,11 @@ public class ItemActivity extends AppCompatActivity {
                         try {
                             String localPhotoPath = item.getString("localPhotoPath");
                             File imgFile = new File(localPhotoPath);
-                            Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getPath());
 
                             RequestOptions options = new RequestOptions()
                                     .placeholder(R.drawable.placeholder)
-                                    .override(bitmap.getWidth() / 3, bitmap.getHeight()/ 3)
-                                    .centerCrop();
-                            Glide.with(context).load(bitmap).apply(options).into(imgField);
+                                    .centerInside();
+                            Glide.with(context).load(imgFile).apply(options).into(imgField);
                         } catch(JSONException e) {
                             Log.d("JSONEXCEPTION", e.getMessage());
                         }
@@ -345,45 +340,5 @@ public class ItemActivity extends AppCompatActivity {
         } catch (JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
-    }
-
-    public Bitmap rotateImageIfRequired(Bitmap img, String currentPhotoPath) {
-        Uri uri = Uri.fromFile(new File(currentPhotoPath));
-        if (uri.getScheme().equals("content")) {
-            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
-            Cursor c = this.getContentResolver().query(uri, projection, null, null, null);
-            if (c.moveToFirst()) {
-                final int rotation = c.getInt(0);
-                c.close();
-                return rotateImage(img, rotation);
-            }
-            return img;
-        } else {
-            try {
-                ExifInterface ei = new ExifInterface(uri.getPath());
-                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        return rotateImage(img, 90);
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        return rotateImage(img, 180);
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        return rotateImage(img, 270);
-                    default:
-                        return img;
-                }
-            } catch (IOException e) {
-                Log.d("EXIFERROR", e.getMessage());
-            }
-            return img;
-        }
-    }
-
-    public Bitmap rotateImage(Bitmap img, int degree) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degree);
-        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        return rotatedImg;
     }
 }

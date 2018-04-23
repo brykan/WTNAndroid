@@ -75,19 +75,13 @@ public class AddItemActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            try {
-                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + currentPhotoPath));
-                imageBitmap = rotateImageIfRequired(imageBitmap);
-
+                File imgFile = new File(currentPhotoPath);
                 RequestOptions options = new RequestOptions()
                         .placeholder(R.drawable.placeholder)
-                        .override(imageBitmap.getWidth() / 3, imageBitmap.getHeight()/ 3)
-                        .centerCrop();
+                        .centerInside();
+
                 addImgBtn.setBackgroundResource(0);
-                Glide.with(this).load(imageBitmap).apply(options).into(addImgBtn);
-            } catch(IOException e) {
-                e.printStackTrace();
-            }
+                Glide.with(this).load(imgFile).apply(options).into(addImgBtn);
         }
     }
 
@@ -165,45 +159,5 @@ public class AddItemActivity extends AppCompatActivity {
                         getApplicationContext());
 
         request.execute();
-    }
-
-    public Bitmap rotateImageIfRequired(Bitmap img) {
-        Uri uri = Uri.parse("file://" + currentPhotoPath);
-        if (uri.getScheme().equals("content")) {
-            String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
-            Cursor c = this.getContentResolver().query(uri, projection, null, null, null);
-            if (c.moveToFirst()) {
-                final int rotation = c.getInt(0);
-                c.close();
-                return rotateImage(img, rotation);
-            }
-            return img;
-        } else {
-            try {
-                ExifInterface ei = new ExifInterface(uri.getPath());
-                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        return rotateImage(img, 90);
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        return rotateImage(img, 180);
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        return rotateImage(img, 270);
-                    default:
-                        return img;
-                }
-            } catch (IOException e) {
-                Log.d("EXIFERROR", e.getMessage());
-            }
-            return img;
-        }
-    }
-
-    public Bitmap rotateImage(Bitmap img, int degree) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degree);
-        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        return rotatedImg;
     }
 }
