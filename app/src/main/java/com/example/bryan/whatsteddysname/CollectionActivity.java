@@ -30,7 +30,11 @@ import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -181,7 +185,7 @@ public class CollectionActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         if(menuItem.getItemId() == R.id.sign_out) {
-            final DialogInterface.OnClickListener deleteItemListner = new DialogInterface.OnClickListener() {
+            final DialogInterface.OnClickListener signOutListener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which){
@@ -200,8 +204,8 @@ public class CollectionActivity extends AppCompatActivity {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(CollectionActivity.this);
             AlertDialog dialog = builder.setMessage("Are you sure you want to sign out?")
-                    .setPositiveButton("Yes", deleteItemListner)
-                    .setNegativeButton("No", deleteItemListner)
+                    .setPositiveButton("Yes", signOutListener)
+                    .setNegativeButton("No", signOutListener)
                     .create();
             dialog.show();
             Button buttonPositive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
@@ -286,6 +290,46 @@ public class CollectionActivity extends AppCompatActivity {
                 int position = data.getIntExtra("itemIndex", -1);
 
                 if (position != -1) {
+                    try {
+                        final AmazonS3Client s3Client =
+                                new AmazonS3Client(
+                                        AWSMobileClient.getInstance().getCredentialsProvider());
+                        final JSONObject configuration =
+                                AWSMobileClient
+                                        .getInstance()
+                                        .getConfiguration()
+                                        .optJsonObject("S3TransferUtility");
+                        final JSONObject json = new JSONObject(items.get(position));
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                s3Client.deleteObject(
+                                        configuration.getString("Bucket"),
+                                        json.getString("s3Location"));
+                            } catch(JSONException j) {
+                                Log.d("JSONEXCEPTION", j.getMessage());
+                            }
+                            }
+                        }).start();
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    s3Client.deleteObject(
+                                            configuration.getString("Bucket"),
+                                            json.getString("grayS3Location"));
+                                } catch(JSONException j) {
+                                    Log.d("JSONEXCEPTION", j.getMessage());
+                                }
+                            }
+                        }).start();
+                    } catch(JSONException j) {
+                        Log.d("JSONEXCEPTION", j.getMessage());
+                    }
+
                     items.remove(position);
 
                     user.setItems(items);

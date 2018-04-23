@@ -86,13 +86,16 @@ public class HttpGetRequest extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(final String result){
         super.onPostExecute(result);
-        if(result != null && result != "{\"message\": \"Endpoint request timed out\"}")  {
+        if(result != null
+            && !result.equals("{\"message\": \"Endpoint request timed out\"}")
+            &&  !result.contains("stackTrace"))  {
+            String actualResult = result.replace("\"", "");
             List<String> resultList = new ArrayList<String>();
 
             for(String json : items) {
                 try {
                     JSONObject obj = new JSONObject(json);
-                    if(obj.getString("s3Location") == result) {
+                    if(obj.getString("s3Location").equals(actualResult)) {
                         resultList.add(json);
                     }
                 } catch(JSONException j) {

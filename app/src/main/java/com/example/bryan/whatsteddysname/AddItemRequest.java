@@ -111,6 +111,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
             item.put("s3Location", fileLocation);
             item.put("itemName", itemName);
             item.put("itemDescription", itemDes);
+            item.put("grayS3Location", grayFileLocation);
         } catch (JSONException e) {
             Log.d("JSONEXCEPTION", e.getMessage());
         }
@@ -192,7 +193,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
 
                     if(outFile != null) {
                         FileOutputStream outStream = new FileOutputStream(outFile);
-                        out.get().compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+                        out.get().compress(Bitmap.CompressFormat.JPEG, 0, outStream);
                         outStream.flush();
                         outStream.close();
                     }

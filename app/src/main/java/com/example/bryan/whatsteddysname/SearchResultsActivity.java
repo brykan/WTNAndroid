@@ -30,7 +30,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         results = (List<String>) intent.getStringArrayListExtra("results");
-        Log.d("Result:", results.toString());
+
         ItemList adapter = new ItemList(this, results);
         resultsList.setAdapter(adapter);
 
