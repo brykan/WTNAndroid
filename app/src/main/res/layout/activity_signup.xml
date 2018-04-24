@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/wtnbg"
-    tools:context="com.example.bryan.whatsteddysname.SignupActivity">
+    tools:context="com.example.bryan.whatsteddysname.activities.SignupActivity">
 
     <TextView
         android:id="@+id/logInTitle"

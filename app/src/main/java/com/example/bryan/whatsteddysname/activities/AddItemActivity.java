@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.bryan.whatsteddysname.asynctasks.AddItemRequest;
+import com.example.bryan.whatsteddysname.R;
 
 import java.io.File;
 import java.io.IOException;

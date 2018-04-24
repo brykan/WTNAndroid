@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
 
+import com.example.bryan.whatsteddysname.R;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 

@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +10,7 @@ import com.amazonaws.mobile.auth.core.StartupAuthResultHandler;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
+import com.example.bryan.whatsteddysname.R;
 
 
 public class SplashActivity extends AppCompatActivity {

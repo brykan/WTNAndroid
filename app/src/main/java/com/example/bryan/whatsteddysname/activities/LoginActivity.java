@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.core.StartupAuthResult;
 import com.amazonaws.mobile.auth.core.StartupAuthResultHandler;
+import com.example.bryan.whatsteddysname.R;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 

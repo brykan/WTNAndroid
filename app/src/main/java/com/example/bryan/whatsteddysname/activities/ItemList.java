@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.Activity;
 import android.util.Log;
@@ -21,6 +21,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.bryan.whatsteddysname.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;

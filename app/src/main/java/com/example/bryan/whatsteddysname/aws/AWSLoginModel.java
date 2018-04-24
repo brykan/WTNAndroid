@@ -25,7 +25,7 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.SignUpHan
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.example.bryan.whatsteddysname.WTNUsersDO;
+import com.example.bryan.whatsteddysname.aws.WTNUsersDO;
 
 import org.json.JSONException;
 import org.json.JSONObject;

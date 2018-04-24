@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -31,6 +31,8 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.example.bryan.whatsteddysname.asynctasks.InitiateMLSearchTask;
+import com.example.bryan.whatsteddysname.R;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 import org.json.JSONException;
@@ -39,8 +41,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import com.example.bryan.whatsteddysname.aws.WTNUsersDO;
 
-import static com.example.bryan.whatsteddysname.AddItemActivity.REQUEST_IMAGE_CAPTURE;
+import static com.example.bryan.whatsteddysname.activities.AddItemActivity.REQUEST_IMAGE_CAPTURE;
 
 public class CollectionActivity extends AppCompatActivity {
     private DynamoDBMapper dynamoDBMapper;
