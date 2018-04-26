@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
+        project.archivesBaseName = "WhatsTeddysName"
         applicationId "com.example.bryan.whatsteddysname"
         minSdkVersion 21
         targetSdkVersion 27
@@ -14,6 +15,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            applicationVariants.all { variant ->
+                variant.outputs.each{ output ->
+                    output.outputFileName = "${archivesBaseName}_${variant.buildType.name}_${defaultConfig.versionName}.apk"
+                }
+            }
         }
     }
 }

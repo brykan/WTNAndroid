@@ -1,10 +1,11 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.core.StartupAuthResult;
 import com.amazonaws.mobile.auth.core.StartupAuthResultHandler;
+import com.example.bryan.whatsteddysname.R;
 import com.example.bryan.whatsteddysname.aws.AWSLoginHandler;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
@@ -91,6 +93,10 @@ public class LoginActivity extends AppCompatActivity implements AWSLoginHandler 
             @Override
             public void onComplete(StartupAuthResult authResults) {
                 if (authResults.isUserSignedIn()) {
+                    Intent intent = new Intent("CloseMain");
+                    intent.putExtra("action", "close");
+                    LocalBroadcastManager.getInstance(LoginActivity.this).sendBroadcast(intent);
+
                     progressDialog.cancel();
                     Toast.makeText(getBaseContext(), "Logged In", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(LoginActivity.this, CollectionActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));

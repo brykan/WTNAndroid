@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.asynctasks;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -27,6 +27,8 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.example.bryan.whatsteddysname.R;
+import com.example.bryan.whatsteddysname.activities.AddItemActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +57,7 @@ public class AddItemRequest extends AsyncTask<Void, Void, Void> {
     private String grayPhotoPath;
     private Boolean finish = false;
 
-    AddItemRequest(
+    public AddItemRequest(
             AddItemActivity context,
             JSONObject item,
             String itemName,

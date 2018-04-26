@@ -15,9 +15,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/wtn_launcher"
+        android:roundIcon="@mipmap/wtn_launcher_round"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
@@ -35,7 +35,7 @@
         </provider>
 
         <activity
-            android:name=".SplashActivity"
+            android:name=".activities.SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,28 +44,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".activities.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".SignupActivity"
+            android:name=".activities.SignupActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".CollectionActivity"
+            android:name=".activities.CollectionActivity"
             android:label="My Collection"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".AddItemActivity"
+            android:name=".activities.AddItemActivity"
             android:label="@string/add_item" />
         <activity
-            android:name=".ItemActivity"
+            android:name=".activities.ItemActivity"
             android:label="View Item" />
         <activity
-            android:name=".SearchResultsActivity"
+            android:name=".activities.SearchResultsActivity"
             android:label="Search results" />
-        <activity android:name=".ForgotPasswordActivity"
+        <activity android:name=".activities.ForgotPasswordActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

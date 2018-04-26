@@ -1,4 +1,4 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -31,6 +31,8 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.example.bryan.whatsteddysname.asynctasks.InitiateMLSearchTask;
+import com.example.bryan.whatsteddysname.R;
 import com.example.bryan.whatsteddysname.aws.AWSLoginModel;
 
 import org.json.JSONException;
@@ -39,8 +41,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import com.example.bryan.whatsteddysname.aws.WTNUsersDO;
 
-import static com.example.bryan.whatsteddysname.AddItemActivity.REQUEST_IMAGE_CAPTURE;
+import static com.example.bryan.whatsteddysname.activities.AddItemActivity.REQUEST_IMAGE_CAPTURE;
 
 public class CollectionActivity extends AppCompatActivity {
     private DynamoDBMapper dynamoDBMapper;
@@ -101,7 +104,9 @@ public class CollectionActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                adapter.getFilter().filter(charSequence.toString());
+                if(charSequence != null) {
+                    adapter.getFilter().filter(charSequence.toString());
+                }
             }
 
             @Override
@@ -127,11 +132,20 @@ public class CollectionActivity extends AppCompatActivity {
         itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                List <String> items = user.getItems();
+                String item = adapter.getItem(position);
+                String search = searchBar.getText().toString();
+                int index = position;
                 Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
 
-                intent.putExtra("ITEM", items.get(position));
-                intent.putExtra("ITEMINDEX", position);
+                if(search.length() > 0) {
+                    for (String itm: items) {
+                        if (itm.equals(item)) {
+                            index = items.indexOf(itm);
+                        }
+                    }
+                }
+                intent.putExtra("ITEM", adapter.getItem(position));
+                intent.putExtra("ITEMINDEX", index);
                 startActivityForResult(intent, REQUEST_VIEW_ITEM);
             }
         });
@@ -290,6 +304,7 @@ public class CollectionActivity extends AppCompatActivity {
                 int position = data.getIntExtra("itemIndex", -1);
 
                 if (position != -1) {
+                    String search = searchBar.getText().toString();
                     try {
                         final AmazonS3Client s3Client =
                                 new AmazonS3Client(
@@ -334,6 +349,11 @@ public class CollectionActivity extends AppCompatActivity {
 
                     user.setItems(items);
                     updateUser(user);
+
+                    if (search.length() > 0) {
+                        searchBar.setText(null);
+                    }
+
                     adapter.notifyDataSetChanged();
                 }
             } else if(resultCode == ItemActivity.RESULT_UPDATE_ITEM) {
@@ -342,10 +362,16 @@ public class CollectionActivity extends AppCompatActivity {
                 int position = data.getIntExtra("itemIndex", -1);
 
                 if (position != -1) {
+                    String search = searchBar.getText().toString();
                     items.set(position, updatedItem);
 
                     user.setItems(items);
                     updateUser(user);
+
+                    if (search.length() > 0) {
+                        searchBar.setText(null);
+                    }
+
                     adapter.notifyDataSetChanged();
                 }
             }

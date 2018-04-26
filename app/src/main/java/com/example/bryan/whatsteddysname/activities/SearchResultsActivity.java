@@ -1,16 +1,17 @@
-package com.example.bryan.whatsteddysname;
+package com.example.bryan.whatsteddysname.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.example.bryan.whatsteddysname.R;
+
 import java.util.List;
 
-import static com.example.bryan.whatsteddysname.CollectionActivity.REQUEST_VIEW_ITEM;
+import static com.example.bryan.whatsteddysname.activities.CollectionActivity.REQUEST_VIEW_ITEM;
 
 public class SearchResultsActivity extends AppCompatActivity {
     private ListView resultsList;

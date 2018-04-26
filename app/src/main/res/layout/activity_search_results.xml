@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.bryan.whatsteddysname.SearchResultsActivity">
+    tools:context="com.example.bryan.whatsteddysname.activities.SearchResultsActivity">
 
     <ListView
         android:id="@+id/resultsList"
