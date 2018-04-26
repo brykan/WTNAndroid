@@ -344,7 +344,7 @@ public class CollectionActivity extends AppCompatActivity {
                     } catch(JSONException j) {
                         Log.d("JSONEXCEPTION", j.getMessage());
                     }
-                    
+
                     items.remove(position);
 
                     user.setItems(items);
