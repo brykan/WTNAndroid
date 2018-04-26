@@ -104,7 +104,9 @@ public class CollectionActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                adapter.getFilter().filter(charSequence.toString());
+                if(charSequence != null) {
+                    adapter.getFilter().filter(charSequence.toString());
+                }
             }
 
             @Override
@@ -130,11 +132,20 @@ public class CollectionActivity extends AppCompatActivity {
         itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                List <String> items = user.getItems();
+                String item = adapter.getItem(position);
+                String search = searchBar.getText().toString();
+                int index = position;
                 Intent intent = new Intent(CollectionActivity.this, ItemActivity.class);
 
-                intent.putExtra("ITEM", items.get(position));
-                intent.putExtra("ITEMINDEX", position);
+                if(search.length() > 0) {
+                    for (String itm: items) {
+                        if (itm.equals(item)) {
+                            index = items.indexOf(itm);
+                        }
+                    }
+                }
+                intent.putExtra("ITEM", adapter.getItem(position));
+                intent.putExtra("ITEMINDEX", index);
                 startActivityForResult(intent, REQUEST_VIEW_ITEM);
             }
         });
@@ -293,6 +304,7 @@ public class CollectionActivity extends AppCompatActivity {
                 int position = data.getIntExtra("itemIndex", -1);
 
                 if (position != -1) {
+                    String search = searchBar.getText().toString();
                     try {
                         final AmazonS3Client s3Client =
                                 new AmazonS3Client(
@@ -332,11 +344,16 @@ public class CollectionActivity extends AppCompatActivity {
                     } catch(JSONException j) {
                         Log.d("JSONEXCEPTION", j.getMessage());
                     }
-
+                    
                     items.remove(position);
 
                     user.setItems(items);
                     updateUser(user);
+
+                    if (search.length() > 0) {
+                        searchBar.setText(null);
+                    }
+
                     adapter.notifyDataSetChanged();
                 }
             } else if(resultCode == ItemActivity.RESULT_UPDATE_ITEM) {
@@ -345,10 +362,16 @@ public class CollectionActivity extends AppCompatActivity {
                 int position = data.getIntExtra("itemIndex", -1);
 
                 if (position != -1) {
+                    String search = searchBar.getText().toString();
                     items.set(position, updatedItem);
 
                     user.setItems(items);
                     updateUser(user);
+
+                    if (search.length() > 0) {
+                        searchBar.setText(null);
+                    }
+
                     adapter.notifyDataSetChanged();
                 }
             }

@@ -1,6 +1,7 @@
 package com.example.bryan.whatsteddysname.activities;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,12 @@ public class ItemList extends ArrayAdapter<String> implements Filterable {
     @Override
     public int getCount() {
         return filteredList.size();
+    }
+
+    @Nullable
+    @Override
+    public String getItem(int position) {
+        return filteredList.get(position);
     }
 
     @Override
